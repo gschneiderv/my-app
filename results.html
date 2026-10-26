@@ -1,0 +1,160 @@
+<!doctype html>
+<!--
+  SequenceChef: Screen 2 (Results & Analytics dashboard).
+
+  Presentation layer only. There is no calculation logic yet; every value
+  shown here is static placeholder content taken from the design mockups.
+  Structure:
+    .app-header   : logo + page title
+    .dashboard    : two-column grid (results on the left, analytics on the right)
+    .app-stepper  : 2-step progress tracker along the bottom
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>SequenceChef - Results & Analytics</title>
+
+    <!-- Fonts from the design system: Inter (UI) and JetBrains Mono (sequences, numbers). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+
+  <body>
+    <!-- BEGIN: App header -->
+    <header class="app-header">
+      <a class="brand" href="#" aria-label="SequenceChef home">
+        <!-- Inline SVG keeps the logo self-contained (no image request). -->
+        <svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true">
+          <path d="M12 12L32 32M32 12L12 32" opacity="0.4" stroke="#22d3ee" stroke-linecap="round" stroke-width="3" />
+          <path d="M10 22C10 22 17 14 22 22C27 30 34 22 34 22" stroke="#10b981" stroke-linecap="round" stroke-width="3.5" fill="none" />
+          <circle cx="10" cy="22" r="5" fill="#38bdf8" />
+          <circle cx="34" cy="22" r="5" fill="#10b981" />
+          <circle cx="22" cy="14" r="3.5" fill="#22d3ee" />
+          <circle cx="22" cy="30" r="3.5" fill="#059669" />
+        </svg>
+        <span class="brand-name"><span>Sequence</span><span class="brand-accent">Chef</span></span>
+      </a>
+      <!-- Page context: which screen the user is on. -->
+      <p class="app-header-meta">Run ID: SC-9042-PROCESSED</p>
+    </header>
+    <!-- END: App header -->
+
+    <!-- BEGIN: Main dashboard -->
+    <main class="dashboard">
+      <!--
+        Left panel (results). Two read-only "strand" containers.
+        Each container: a header bar (label + badge + copy action) and a
+        read-only sequence body. The body is a <pre> so spacing is preserved
+        exactly, which keeps base alignment in monospace.
+        Integration note: when the calculation logic is connected, replace the
+        placeholder text inside each <code> element. Nothing else needs to change.
+      -->
+      <section class="panel results-panel" aria-labelledby="results-title">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Step 2 of 2</p>
+            <h1 id="results-title" class="panel-title">Results</h1>
+          </div>
+          <span class="status-chip">Validated • 100% Concordance</span>
+        </div>
+
+        <!-- Read-only container: Reverse Complement (DNA) -->
+        <article class="strand-card">
+          <header class="strand-header">
+            <div class="strand-title">
+              <span class="strand-tag strand-tag--dna">DNA</span>
+              <h2>Reverse Complement (DNA)</h2>
+              <span class="strand-meta">5&prime; → 3&prime;</span>
+            </div>
+            <!-- Copy action. Wiring comes with the integration ticket. -->
+            <button type="button" class="btn btn-ghost" disabled>Copy</button>
+          </header>
+          <pre class="strand-body" aria-label="Reverse complement DNA sequence"><code>GCCATCCTGCTGCACAAGCCCAGAGGCCCAGAGCTCGTGCTGCAGATCGAGGCCATGGCCGACGTCATCAACAGCCGC</code></pre>
+        </article>
+
+        <!-- Read-only container: Transcribed Strand (RNA) -->
+        <article class="strand-card">
+          <header class="strand-header">
+            <div class="strand-title">
+              <span class="strand-tag strand-tag--rna">RNA</span>
+              <h2>Transcribed Strand (RNA)</h2>
+              <span class="strand-meta">5&prime; → 3&prime;</span>
+            </div>
+            <button type="button" class="btn btn-ghost" disabled>Copy</button>
+          </header>
+          <pre class="strand-body" aria-label="Transcribed RNA sequence"><code>GCCAUCCUGCUGCACAAGCCCAGAGGCCCAGAGCUCGUGCUGCAGAUCGAGGCCAUGGCCGACGUCAUCAACAGCCGC</code></pre>
+        </article>
+      </section>
+
+      <!--
+        Right panel (analytics). The large metric is the focal point of the
+        panel, so it sits at the top with the supporting labels below it.
+        Gradient bars are decorative and use the nucleotide palette tokens.
+      -->
+      <aside class="panel analytics-panel" aria-labelledby="analytics-title">
+        <div class="panel-header">
+          <h2 id="analytics-title" class="panel-title panel-title--sm">Cooking Temperature Analytics</h2>
+        </div>
+
+        <div class="metric">
+          <p class="metric-label">Melting Temperature</p>
+          <p class="metric-value">
+            <span class="metric-number">64</span><span class="metric-unit">°C</span>
+          </p>
+          <p class="metric-note">Wallace rule estimate for the input sequence</p>
+        </div>
+
+        <dl class="metric-grid">
+          <div>
+            <dt>Input Length</dt>
+            <dd>1,432 <span>bp</span></dd>
+          </div>
+          <div>
+            <dt>GC Density</dt>
+            <dd>53.4 <span>%</span></dd>
+          </div>
+          <div>
+            <dt>Active Frame</dt>
+            <dd>+1 <span>Sense</span></dd>
+          </div>
+          <div>
+            <dt>Coding Yield</dt>
+            <dd>110 <span>aa</span></dd>
+          </div>
+        </dl>
+      </aside>
+    </main>
+    <!-- END: Main dashboard -->
+
+    <!-- BEGIN: 2-step progress tracker -->
+    <nav class="app-stepper" aria-label="Progress">
+      <!-- Each step is a column with a label and a bar. The bar's colour shows state. -->
+      <ol class="stepper">
+        <li class="step step--done">
+          <span class="step-label">Step 1</span>
+          <span class="step-name">Sequence Load</span>
+          <span class="step-bar" aria-hidden="true"></span>
+        </li>
+        <li class="step step--active" aria-current="step">
+          <span class="step-label">Step 2</span>
+          <span class="step-name">Results &amp; Analytics</span>
+          <span class="step-bar" aria-hidden="true"></span>
+        </li>
+      </ol>
+    </nav>
+    <!-- END: 2-step progress tracker -->
+
+    <footer class="app-footer">&copy; SequenceChef. All rights reserved.</footer>
+
+    <!-- Logic entry point. Intentionally empty for FE-1. -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

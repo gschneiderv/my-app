@@ -1,0 +1,101 @@
+<!doctype html>
+<!--
+  SequenceChef: Screen 1 (User Initialization).
+
+  This is the landing page. The user pastes or uploads a raw sequence, then
+  moves on to processing. Calculation is not written yet: the "Next" button
+  only checks that there is input and then opens the results screen.
+
+  Structure:
+    .init-page     : full-height workspace background, centres the card
+    .init-card     : white rounded card with the title and input
+    .init-actions  : upload link (left) and primary button (right)
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>SequenceChef - Welcome</title>
+
+    <!-- Inter (UI text) and JetBrains Mono (the sequence the user types). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="/src/init.css" />
+  </head>
+
+  <body>
+    <div class="init-page">
+      <!-- BEGIN: Brand -->
+      <header class="init-brand">
+        <svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true">
+          <path d="M12 12L32 32M32 12L12 32" opacity="0.4" stroke="#22d3ee" stroke-linecap="round" stroke-width="3" />
+          <path d="M10 22C10 22 17 14 22 22C27 30 34 22 34 22" stroke="#10b981" stroke-linecap="round" stroke-width="3.5" fill="none" />
+          <circle cx="10" cy="22" r="5" fill="#38bdf8" />
+          <circle cx="34" cy="22" r="5" fill="#10b981" />
+          <circle cx="22" cy="14" r="3.5" fill="#22d3ee" />
+          <circle cx="22" cy="30" r="3.5" fill="#059669" />
+        </svg>
+        <span class="brand-name"><span>Sequence</span><span class="brand-accent">Chef</span></span>
+      </header>
+      <!-- END: Brand -->
+
+      <!-- BEGIN: Initialization card -->
+      <main class="init-card">
+        <h1 class="init-title">Welcome to SequenceChef</h1>
+        <p class="init-subtitle">Paste a raw DNA sequence or load it from a file to begin.</p>
+
+        <!--
+          The text area is the main input. The placeholder is shown only while
+          it is empty. The "input" event (see init.js) enables the Next button
+          as soon as the user has typed or pasted something.
+        -->
+        <label class="visually-hidden" for="sequence-input">Raw DNA sequence</label>
+        <textarea
+          id="sequence-input"
+          class="sequence-input"
+          placeholder="Paste your raw DNA sequence here (e.g., HumIns_gene_v3)"
+          spellcheck="false"
+          autocomplete="off"
+        ></textarea>
+
+        <!--
+          Test samples from src/mock-data.js. Choosing one copies its sequence
+          into the text area, the same as pasting it. The first option is a
+          placeholder and is never a real sample.
+        -->
+        <div class="sample-row">
+          <label class="sample-label" for="sample-select">Load a test sample</label>
+          <select id="sample-select" class="sample-select">
+            <option value="">Choose a synthetic sample…</option>
+          </select>
+        </div>
+
+        <!-- Hidden file picker. The visible control below is a styled button that opens it. -->
+        <input id="file-input" class="visually-hidden" type="file" accept=".fasta,.fa,.txt" />
+
+        <div class="init-actions">
+          <div class="upload-group">
+            <button type="button" class="upload-link" id="upload-button">Upload from file (.fasta, .txt)</button>
+            <!-- Shows the loaded file name, or an error message, to the user. -->
+            <span class="upload-status" id="upload-status" role="status" aria-live="polite"></span>
+          </div>
+
+          <button type="button" class="btn-primary" id="next-button" disabled>
+            Next: Process Sequence
+          </button>
+        </div>
+      </main>
+      <!-- END: Initialization card -->
+
+      <footer class="init-footer">&copy; SequenceChef. All rights reserved.</footer>
+    </div>
+
+    <script type="module" src="/src/init.js"></script>
+  </body>
+</html>

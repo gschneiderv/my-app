@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SequenceChef - Sequence Preparation</title>
+<!-- Tailwind CSS v3 CDN with forms plugin -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#121e2d',
+              card: '#f4f6f8',
+              emerald: '#23a566',
+              'emerald-hover': '#1e9159',
+              teal: '#2bb197',
+              border: '#d1d8df',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles for Precise Aesthetics -->
+<style data-purpose="custom-styling">
+    body {
+      background-color: #121e2d;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .custom-textarea {
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+      resize: vertical;
+    }
+    .custom-textarea:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(35, 165, 102, 0.2);
+    }
+  </style>
+<meta content="web_standard" name="shell-type"/></head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between selection:bg-emerald-500 selection:text-white p-6 sm:p-8 md:p-12">
+<!-- BEGIN: MainHeader -->
+<header class="w-full max-w-6xl mx-auto flex items-center justify-between" data-purpose="app-navigation">
+<!-- Brand Logo and Wordmark -->
+<a aria-label="SequenceChef Home" class="inline-flex items-center gap-3.5 group transition-transform active:scale-95" href="#">
+<!-- Molecular / DNA Node Logo Icon -->
+<svg class="w-10 h-10 transition-transform group-hover:rotate-6 duration-300" fill="none" viewbox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="brand-grad" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#38bdf8"></stop>
+<stop offset="50%" stop-color="#22d3ee"></stop>
+<stop offset="100%" stop-color="#10b981"></stop>
+</lineargradient>
+</defs>
+<!-- Interconnected Nodes & Strands -->
+<path d="M12 12L32 32M32 12L12 32" opacity="0.4" stroke="url(#brand-grad)" stroke-linecap="round" stroke-width="3"></path>
+<path d="M10 22C10 22 17 14 22 22C27 30 34 22 34 22" stroke="url(#brand-grad)" stroke-linecap="round" stroke-width="3.5"></path>
+<!-- Central Nodes -->
+<circle cx="10" cy="22" fill="#38bdf8" r="5"></circle>
+<circle cx="34" cy="22" fill="#10b981" r="5"></circle>
+<circle cx="22" cy="14" fill="#22d3ee" r="3.5"></circle>
+<circle cx="22" cy="30" fill="#059669" r="3.5"></circle>
+<circle cx="12" cy="12" fill="#38bdf8" opacity="0.8" r="3"></circle>
+<circle cx="32" cy="32" fill="#10b981" opacity="0.8" r="3"></circle>
+<circle cx="32" cy="12" fill="#2dd4bf" opacity="0.8" r="3"></circle>
+<circle cx="12" cy="32" fill="#0284c7" opacity="0.8" r="3"></circle>
+</svg>
+<!-- Logo Typography -->
+<div class="flex items-center text-2xl font-bold tracking-tight">
+<span class="text-white">Sequence</span><span class="text-[#23a566]">Chef</span>
+</div>
+</a>
+</header>
+<!-- END: MainHeader -->
+<!-- BEGIN: MainContent -->
+<main class="w-full max-w-5xl mx-auto my-auto py-8"><div class="flex flex-col w-full">
+<!-- Main Card Container matching SequenceChef workspace dimensions and visual aesthetic -->
+<div class="w-full bg-brand-card text-slate-800 rounded-3xl shadow-2xl p-6 sm:p-10 flex flex-col gap-8 relative overflow-hidden">
+<!-- Subtle Top Ambient Glow Accent -->
+<div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-32 bg-primary/10 blur-3xl pointer-events-none rounded-full"></div>
+<!-- 1. Header Section -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2.5">
+<span class="font-label-ui text-label-ui uppercase tracking-wider text-primary font-bold">Step 3 of 3</span>
+<span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+<span class="font-body-muted text-body-muted text-slate-500 font-medium">Pipeline Finalization</span>
+</div>
+<h1 class="font-headline-md text-headline-md text-slate-900 font-bold tracking-tight">Sequence Transformation Complete</h1>
+<p class="font-body-default text-body-default text-slate-600">Your construct has been verified, parsed into canonical reverse complement, and transcribed to mRNA.</p>
+</div>
+<!-- Success Badge -->
+<div class="inline-flex items-center gap-2 self-start sm:self-center px-3.5 py-1.5 rounded-full bg-emerald-50 text-brand-emerald shadow-sm">
+<span class="material-symbols-outlined text-lg leading-none" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-data text-label-data text-brand-emerald">Validated • 100% Concordance</span>
+</div>
+</div>
+<!-- 2. Metrics & Biophysical Overview Bar -->
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-white shadow-sm">
+<div class="flex flex-col px-3 py-1">
+<span class="font-label-ui text-label-ui text-slate-400 uppercase">Input Length</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-title-sm text-title-sm font-bold text-slate-900">1,432</span>
+<span class="font-label-data text-label-data text-slate-500">bp</span>
+</div>
+</div>
+<div class="flex flex-col px-3 py-1">
+<span class="font-label-ui text-label-ui text-slate-400 uppercase">GC Density</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-title-sm text-title-sm font-bold text-slate-900">53.4</span>
+<span class="font-label-data text-label-data text-slate-500">%</span>
+</div>
+</div>
+<div class="flex flex-col px-3 py-1">
+<span class="font-label-ui text-label-ui text-slate-400 uppercase">Active Frame</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-title-sm text-title-sm font-bold text-slate-900">+1</span>
+<span class="font-label-data text-label-data text-slate-500">Sense</span>
+</div>
+</div>
+<div class="flex flex-col px-3 py-1">
+<span class="font-label-ui text-label-ui text-slate-400 uppercase">Coding Yield</span>
+<div class="flex items-baseline gap-1 mt-0.5">
+<span class="font-title-sm text-title-sm font-bold text-slate-900">110</span>
+<span class="font-label-data text-label-data text-slate-500">aa peptide</span>
+</div>
+</div>
+</div>
+<!-- 3. Transformed Strands Display Area -->
+<div class="flex flex-col gap-4">
+<!-- Strand 1: Reverse Complement -->
+<div class="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
+<div class="flex items-center justify-between px-5 py-3.5 bg-slate-50/80">
+<div class="flex items-center gap-2.5">
+<span class="flex items-center justify-center w-6 h-6 rounded-md bg-emerald-100 text-brand-emerald font-label-data text-label-data font-bold">RC</span>
+<span class="font-title-sm text-title-sm font-semibold text-slate-800">Reverse Complement</span>
+<span class="font-label-data text-label-data text-slate-500 px-2 py-0.5 bg-slate-200/60 rounded">5' → 3'</span>
+<span class="hidden sm:inline-block font-label-data text-label-data text-slate-400">1,432 bp</span>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 font-label-ui text-label-ui font-medium shadow-xs transition-colors" id="copy-rc-btn" onclick="navigator.clipboard.writeText('GCCATCCTGCTGCACAAGCCCAGAGGCCCAGAGCTCGTGCTGCAGATCGAGGCCATGGCCGACGTCATCAACAGCCGC'); this.innerText='Copied!'; setTimeout(() =&gt; this.innerText='Copy Sequence', 1800);">
+<span class="material-symbols-outlined text-base leading-none text-slate-500">content_copy</span>
+            Copy Sequence
+          </button>
+</div>
+<div class="p-4 sm:p-5 bg-slate-900 text-slate-100 font-code-display text-code-display overflow-x-auto select-all">
+<div class="flex items-center gap-1.5 whitespace-nowrap tracking-wider">
+<span class="text-slate-500 font-label-data select-none">5'-</span>
+<span class="text-secondary font-semibold">GCC</span>
+<span class="text-emerald-400 font-semibold">ATC</span>
+<span class="text-slate-300">CTG</span>
+<span class="text-secondary font-semibold">CTG</span>
+<span class="text-amber-300">CAC</span>
+<span class="text-emerald-400">AAG</span>
+<span class="text-secondary">CCC</span>
+<span class="text-emerald-400">AGA</span>
+<span class="text-secondary">GGC</span>
+<span class="text-secondary">CCA</span>
+<span class="text-emerald-400">GAG</span>
+<span class="text-slate-300">CTC</span>
+<span class="text-slate-300">GTG</span>
+<span class="text-slate-300">CTG</span>
+<span class="text-amber-300">CAG</span>
+<span class="text-emerald-400">ATC</span>
+<span class="text-emerald-400">GAG</span>
+<span class="text-secondary">GCC</span>
+<span class="text-emerald-400">ATG</span>
+<span class="text-secondary">GCC</span>
+<span class="text-slate-400 select-none">... [1,372 bp hidden] ...</span>
+<span class="text-slate-300">CAG</span>
+<span class="text-secondary">CCG</span>
+<span class="text-secondary">CGC</span>
+<span class="text-slate-500 font-label-data select-none">-3'</span>
+</div>
+</div>
+</div>
+<!-- Strand 2: In Vitro Transcribed mRNA -->
+<div class="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
+<div class="flex items-center justify-between px-5 py-3.5 bg-slate-50/80">
+<div class="flex items-center gap-2.5">
+<span class="flex items-center justify-center w-6 h-6 rounded-md bg-cyan-100 text-cyan-700 font-label-data text-label-data font-bold">mRNA</span>
+<span class="font-title-sm text-title-sm font-semibold text-slate-800">In Vitro Transcribed Transcript (Uracil-substituted)</span>
+<span class="font-label-data text-label-data text-slate-500 px-2 py-0.5 bg-slate-200/60 rounded">5' → 3'</span>
+<span class="hidden sm:inline-block font-label-data text-label-data text-slate-400">1,432 nt</span>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 font-label-ui text-label-ui font-medium shadow-xs transition-colors" id="copy-mrna-btn" onclick="navigator.clipboard.writeText('GCCAUCCUGCUGCACAAGCCCAGAGGCCCAGAGCUCGUGCUGCAGAUCGAGGCCAUGGCCGACGUCAUCAACAGCCGC'); this.innerText='Copied!'; setTimeout(() =&gt; this.innerText='Copy Transcript', 1800);">
+<span class="material-symbols-outlined text-base leading-none text-slate-500">content_copy</span>
+            Copy Transcript
+          </button>
+</div>
+<div class="p-4 sm:p-5 bg-slate-900 text-slate-100 font-code-display text-code-display overflow-x-auto select-all">
+<div class="flex items-center gap-1.5 whitespace-nowrap tracking-wider">
+<span class="text-slate-500 font-label-data select-none">5'-</span>
+<span class="text-secondary font-semibold">GCC</span>
+<span class="text-emerald-400 font-semibold">A<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>C</span>
+<span class="text-slate-300">C<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>G</span>
+<span class="text-secondary">C<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>G</span>
+<span class="text-amber-300">CAC</span>
+<span class="text-emerald-400">AAG</span>
+<span class="text-secondary">CCC</span>
+<span class="text-emerald-400">AGA</span>
+<span class="text-secondary">GGC</span>
+<span class="text-secondary">CCA</span>
+<span class="text-emerald-400">GAG</span>
+<span class="text-slate-300">C<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>C</span>
+<span class="text-slate-300">G<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>G</span>
+<span class="text-slate-300">C<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>G</span>
+<span class="text-amber-300">CAG</span>
+<span class="text-emerald-400">A<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>C</span>
+<span class="text-emerald-400">GAG</span>
+<span class="text-secondary">GCC</span>
+<span class="text-emerald-400">A<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">U</span>G</span>
+<span class="text-secondary">GCC</span>
+<span class="text-slate-400 select-none">... [1,372 nt hidden] ...</span>
+<span class="text-slate-300">CAG</span>
+<span class="text-secondary">CCG</span>
+<span class="text-secondary">CGC</span>
+<span class="text-slate-500 font-label-data select-none">-3'</span>
+</div>
+</div>
+</div>
+<!-- Strand 3: Predicted CDS / Polypeptide Preview -->
+<div class="flex flex-col rounded-2xl bg-white shadow-sm overflow-hidden">
+<div class="flex items-center justify-between px-5 py-3 bg-slate-50/80">
+<div class="flex items-center gap-2.5">
+<span class="flex items-center justify-center w-6 h-6 rounded-md bg-amber-100 text-amber-800 font-label-data text-label-data font-bold">CDS</span>
+<span class="font-title-sm text-title-sm font-semibold text-slate-800">Predicted Polypeptide Translation</span>
+<span class="font-label-data text-label-data text-slate-500 px-2 py-0.5 bg-slate-200/60 rounded">N → C</span>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-slate-700 hover:bg-slate-100 font-label-ui text-label-ui font-medium shadow-xs transition-colors" onclick="navigator.clipboard.writeText('MAIPASTLLHKPREALVLQIEAMADVILASG'); this.innerText='Copied!'; setTimeout(() =&gt; this.innerText='Copy Peptide', 1800);">
+<span class="material-symbols-outlined text-base leading-none text-slate-500">content_copy</span>
+            Copy Peptide
+          </button>
+</div>
+<div class="p-4 sm:p-5 bg-slate-900 text-amber-200 font-code-compact text-code-compact overflow-x-auto select-all">
+<span class="text-slate-500 font-label-data select-none">NH2-</span>
+<span class="text-emerald-300 font-bold">M</span>AIPASTLLHKPRGPELLQIEAMADVILASGKRTV... [110 aa]
+          <span class="text-slate-500 font-label-data select-none">-COOH</span>
+</div>
+</div>
+</div>
+<!-- 4. Intuitive Export Controls Section -->
+<div class="p-6 rounded-2xl bg-white shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+<div class="flex flex-col gap-1 min-w-[200px]">
+<label class="font-label-ui text-label-ui text-slate-600 font-semibold" for="export-format">File Format</label>
+<div class="relative">
+<select class="w-full appearance-none pl-3.5 pr-9 py-2.5 rounded-xl bg-slate-50 text-slate-900 font-body-default text-body-default font-medium shadow-xs cursor-pointer focus:bg-white focus:outline-none" id="export-format">
+<option value="fasta">FASTA (.fasta / .fa)</option>
+<option value="genbank">GenBank (.gb)</option>
+<option value="csv">Comma-Separated (.csv)</option>
+<option value="biojson">BioJSON (.json)</option>
+<option value="txt">Plain Sequence (.txt)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<label class="flex items-center gap-3 pt-4 sm:pt-6 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-brand-emerald focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="font-body-default text-body-default text-slate-700 font-medium">Include QC &amp; Metadata header</span>
+</label>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-3 self-end sm:self-auto">
+<button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-label-ui text-label-ui font-semibold transition-all" type="button">
+<span class="material-symbols-outlined text-lg">folder_zip</span>
+          Batch (.zip)
+        </button>
+<button class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-emerald hover:bg-brand-emerald-hover text-white font-label-ui text-label-ui font-bold shadow-md shadow-emerald-600/20 transition-all active:scale-98" type="button">
+<span class="material-symbols-outlined text-lg">download</span>
+          Download File (.fasta)
+        </button>
+</div>
+</div>
+<!-- 5. Bottom Workflow Stepper & Reset Link -->
+<div class="pt-4 flex flex-col gap-5">
+<!-- Stepper Steps -->
+<div class="grid grid-cols-3 gap-2 sm:gap-4 items-center">
+<!-- Step 1 -->
+<div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/70 shadow-xs">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-brand-emerald flex items-center justify-center">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<div class="hidden sm:flex flex-col min-w-0">
+<span class="font-label-ui text-label-ui text-slate-400 uppercase leading-none">Step 1</span>
+<span class="font-body-muted text-body-muted font-semibold text-slate-700 truncate">Sequence Load</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-center gap-2.5 p-2 rounded-xl bg-white/70 shadow-xs">
+<div class="w-6 h-6 rounded-full bg-emerald-100 text-brand-emerald flex items-center justify-center">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<div class="hidden sm:flex flex-col min-w-0">
+<span class="font-label-ui text-label-ui text-slate-400 uppercase leading-none">Step 2</span>
+<span class="font-body-muted text-body-muted font-semibold text-slate-700 truncate">Processing</span>
+</div>
+</div>
+<!-- Step 3 Active/Done -->
+<div class="flex items-center gap-2.5 p-2 rounded-xl bg-brand-navy text-white shadow-xs">
+<div class="w-6 h-6 rounded-full bg-brand-emerald text-brand-navy flex items-center justify-center">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+<div class="hidden sm:flex flex-col min-w-0">
+<span class="font-label-ui text-label-ui text-emerald-400 uppercase leading-none">Step 3</span>
+<span class="font-body-muted text-body-muted font-semibold text-white truncate">Export &amp; Results</span>
+</div>
+</div>
+</div>
+<!-- Footer Reset Option -->
+<div class="flex items-center justify-between pt-1">
+<a class="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-800 font-label-ui text-label-ui font-medium transition-colors" href="#">
+<span class="material-symbols-outlined text-base">restart_alt</span>
+          Start New Sequence
+        </a>
+<span class="font-label-data text-label-data text-slate-400">Run ID: SC-9042-PROCESSED</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple format switch listener for CTA text change
+  const formatSelector = document.getElementById('export-format');
+  if (formatSelector) {
+    formatSelector.addEventListener('change', (e) => {
+      const ext = e.target.value;
+      const downloadBtn = document.querySelector('button.bg-brand-emerald');
+      if (downloadBtn) {
+        downloadBtn.innerHTML = `<span class="material-symbols-outlined text-lg">download</span> Download File (.${ext})`;
+      }
+    });
+  }
+</script></main>
+<!-- END: MainContent -->
+<!-- BEGIN: Footer -->
+<footer class="w-full max-w-6xl mx-auto py-3 text-center text-xs text-slate-500">
+<p>© SequenceChef. All rights reserved.</p>
+</footer>
+<!-- END: Footer -->
+<!-- BEGIN: Interactive Behavior -->
+<script data-purpose="file-reader-handler">
+    // Add file drop or picker handling for .fasta / .txt sequences
+    const fileInput = document.getElementById('file-upload');
+    const textarea = document.getElementById('dna-input');
+
+    if (fileInput && textarea) {
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            textarea.value = e.target.result;
+          };
+          reader.readAsText(file);
+        }
+      });
+    }
+  </script>
+<!-- END: Interactive Behavior -->
+</body></html>

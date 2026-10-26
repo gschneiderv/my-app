@@ -1,0 +1,323 @@
+/*
+  SequenceChef styles, Screen 1 (User Initialization).
+
+  Structure rules:
+  - Colours are tokens on :root so the palette changes in one place.
+  - The page is a flex column that fills the viewport. The card is centred
+    with auto margins, so it stays centred at any height.
+  - Everything is sized in rem, so the layout scales with the user's font size.
+*/
+
+/* ---------- 1. Tokens ---------- */
+:root {
+  /* Dark slate-blue workspace behind the card */
+  --workspace: #121e2d;
+
+  /* Card and text (light surface on dark workspace) */
+  --card: #ffffff;
+  --ink: #0f172a;
+  --ink-soft: #475569;
+  --ink-muted: #64748b;
+  --border: #cbd5e1;
+
+  /* Input surface */
+  --input-bg: #f8fafc;
+  --input-focus: #10b981;
+
+  /* High-contrast green primary (white text on this green passes WCAG AA) */
+  --green: #047857;
+  --green-hover: #065f46;
+
+  --accent-link: #047857;
+
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+/* ---------- 2. Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--workspace);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Hides an element visually but keeps it available to screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- 3. Page layout ---------- */
+/*
+  The page is a column: brand at the top, card in the middle (it takes the
+  free space and centres itself), footer at the bottom. min-height keeps the
+  footer at the bottom on tall screens, and the page still scrolls on short ones.
+*/
+.init-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+}
+
+.init-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  align-self: flex-start;
+}
+
+.brand-mark {
+  width: 2rem;
+  height: 2rem;
+}
+
+.brand-name {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand-accent {
+  color: #10b981;
+}
+
+/* ---------- 4. Card ---------- */
+/*
+  The card is the one white surface on the page. Padding is larger on wide
+  screens so the card reads as the focal point, and it fills the width up to
+  a max so long lines of text stay readable.
+*/
+.init-card {
+  width: 100%;
+  max-width: 48rem;
+  margin: auto; /* centres the card vertically and horizontally in the free space */
+  padding: 2rem;
+  background: var(--card);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.init-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.init-subtitle {
+  margin: 0.5rem 0 1.5rem;
+  color: var(--ink-soft);
+}
+
+/* ---------- 5. Input ---------- */
+/*
+  The text area is tall (about 16rem) so a pasted sequence is visible without
+  scrolling. Monospace keeps the characters in a fixed grid. The focus state
+  adds a green border and a soft glow, per the design system's focus rule.
+*/
+.sequence-input {
+  display: block;
+  width: 100%;
+  min-height: 16rem;
+  padding: 1rem;
+  resize: vertical;
+  background: var(--input-bg);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  word-break: break-all;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.sequence-input::placeholder {
+  color: #94a3b8;
+  font-family: var(--font-ui);
+  letter-spacing: 0;
+}
+
+.sequence-input:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* ---------- 5b. Sample picker ---------- */
+/* A compact row above the text area: label on the left, select filling the rest */
+.sample-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sample-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.sample-select {
+  flex: 1;
+  min-width: 14rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--input-bg);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.sample-select:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* ---------- 6. Actions row ---------- */
+/*
+  Upload link on the left, primary button on the right. On narrow screens
+  they stack, with the button full width so it stays easy to tap.
+*/
+.init-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.upload-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Secondary link-style button */
+.upload-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-link);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.upload-link:hover {
+  color: var(--green-hover);
+}
+
+.upload-link:focus-visible {
+  outline: 2px solid var(--input-focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.upload-status {
+  min-height: 1rem; /* reserves space so the layout does not jump when text appears */
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.upload-status.is-error {
+  color: #b45309;
+}
+
+/* High-contrast primary action */
+.btn-primary {
+  min-width: 14rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--green);
+  color: #ffffff;
+  border: 0;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.3);
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--green-hover);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid #34d399;
+  outline-offset: 3px;
+}
+
+.btn-primary:disabled {
+  background: #94a3b8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* ---------- 7. Footer ---------- */
+.init-footer {
+  padding-top: 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* ---------- 8. Small screens ---------- */
+@media (max-width: 640px) {
+  .init-page {
+    padding: 1rem;
+  }
+
+  .init-card {
+    padding: 1.25rem;
+    border-radius: 1rem;
+  }
+
+  .init-title {
+    font-size: 1.5rem;
+  }
+
+  .init-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+}
