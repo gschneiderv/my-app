@@ -63,34 +63,40 @@
             <p class="eyebrow">Step 2 of 2</p>
             <h1 id="results-title" class="panel-title">Results</h1>
           </div>
-          <span class="status-chip">Validated • 100% Concordance</span>
+          <div class="status-group">
+            <span class="status-chip" id="status-chip">Validated</span>
+            <span class="compute-time">Computed in <span id="compute-ms">0</span> ms</span>
+          </div>
         </div>
 
+        <!-- Shown instead of the strands when the input is invalid. -->
+        <p class="result-error" id="result-error" role="alert" hidden></p>
+
         <!-- Read-only container: Reverse Complement (DNA) -->
-        <article class="strand-card">
+        <article class="strand-card" id="rc-card">
           <header class="strand-header">
             <div class="strand-title">
               <span class="strand-tag strand-tag--dna">DNA</span>
               <h2>Reverse Complement (DNA)</h2>
               <span class="strand-meta">5&prime; → 3&prime;</span>
             </div>
-            <!-- Copy action. Wiring comes with the integration ticket. -->
-            <button type="button" class="btn btn-ghost" disabled>Copy</button>
+            <!-- Copies this strand. Enabled by main.js once results exist. -->
+            <button type="button" class="btn btn-ghost" id="copy-rc-button" disabled>Copy</button>
           </header>
-          <pre class="strand-body" aria-label="Reverse complement DNA sequence"><code>GCCATCCTGCTGCACAAGCCCAGAGGCCCAGAGCTCGTGCTGCAGATCGAGGCCATGGCCGACGTCATCAACAGCCGC</code></pre>
+          <pre class="strand-body" aria-label="Reverse complement DNA sequence"><code id="rc-sequence">GCCATCCTGCTGCACAAGCCCAGAGGCCCAGAGCTCGTGCTGCAGATCGAGGCCATGGCCGACGTCATCAACAGCCGC</code></pre>
         </article>
 
         <!-- Read-only container: Transcribed Strand (RNA) -->
-        <article class="strand-card">
+        <article class="strand-card" id="rna-card">
           <header class="strand-header">
             <div class="strand-title">
               <span class="strand-tag strand-tag--rna">RNA</span>
               <h2>Transcribed Strand (RNA)</h2>
               <span class="strand-meta">5&prime; → 3&prime;</span>
             </div>
-            <button type="button" class="btn btn-ghost" disabled>Copy</button>
+            <button type="button" class="btn btn-ghost" id="copy-rna-button" disabled>Copy</button>
           </header>
-          <pre class="strand-body" aria-label="Transcribed RNA sequence"><code>GCCAUCCUGCUGCACAAGCCCAGAGGCCCAGAGCUCGUGCUGCAGAUCGAGGCCAUGGCCGACGUCAUCAACAGCCGC</code></pre>
+          <pre class="strand-body" aria-label="Transcribed RNA sequence"><code id="rna-sequence">GCCAUCCUGCUGCACAAGCCCAGAGGCCCAGAGCUCGUGCUGCAGAUCGAGGCCAUGGCCGACGUCAUCAACAGCCGC</code></pre>
         </article>
       </section>
 
@@ -107,27 +113,27 @@
         <div class="metric">
           <p class="metric-label">Melting Temperature</p>
           <p class="metric-value">
-            <span class="metric-number">64</span><span class="metric-unit">°C</span>
+            <span class="metric-number" id="tm-number">64</span><span class="metric-unit">°C</span>
           </p>
-          <p class="metric-note">Wallace rule estimate for the input sequence</p>
+          <p class="metric-note" id="tm-note">Wallace rule estimate for the input sequence</p>
         </div>
 
         <dl class="metric-grid">
           <div>
             <dt>Input Length</dt>
-            <dd>1,432 <span>bp</span></dd>
+            <dd><output id="metric-length">1,432</output> <span>bp</span></dd>
           </div>
           <div>
             <dt>GC Density</dt>
-            <dd>53.4 <span>%</span></dd>
+            <dd><output id="metric-gc">53.4</output> <span>%</span></dd>
           </div>
           <div>
             <dt>Active Frame</dt>
-            <dd>+1 <span>Sense</span></dd>
+            <dd><output id="metric-frame">+1</output> <span id="metric-strand">Sense</span></dd>
           </div>
           <div>
             <dt>Coding Yield</dt>
-            <dd>110 <span>aa</span></dd>
+            <dd><output id="metric-yield">110</output> <span>aa</span></dd>
           </div>
         </dl>
       </aside>
@@ -140,6 +146,26 @@
       The click handler lives in src/main.js.
     -->
     <div class="screen-actions">
+      <!--
+        Download menu. The button opens a list of formats. Choosing one saves
+        both strands and the metrics in that format. The list is built in main.js
+        from EXPORT_FORMATS in src/export.js.
+      -->
+      <div class="download">
+        <button type="button" class="btn-secondary" id="download-button" aria-haspopup="true" aria-expanded="false" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 4v11" />
+            <path d="M7 10l5 5 5-5" />
+            <path d="M5 20h14" />
+          </svg>
+          Download
+          <svg class="chevron" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+        <div class="download-menu" id="download-menu" role="menu" hidden></div>
+      </div>
+
       <button type="button" class="btn-secondary" id="new-sequence-button">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
