@@ -134,6 +134,21 @@
     </main>
     <!-- END: Main dashboard -->
 
+    <!--
+      Secondary action: return to Screen 1 to analyse another sequence.
+      Right-aligned so it sits where the eye ends after reading the results.
+      The click handler lives in src/main.js.
+    -->
+    <div class="screen-actions">
+      <button type="button" class="btn-secondary" id="new-sequence-button">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+          <path d="M3 3v5h5" />
+        </svg>
+        Start New Sequence
+      </button>
+    </div>
+
     <!-- BEGIN: 2-step progress tracker -->
     <nav class="app-stepper" aria-label="Progress">
       <!-- Each step is a column with a label and a bar. The bar's colour shows state. -->
