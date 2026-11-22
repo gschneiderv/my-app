@@ -1,6 +1,6 @@
 # SequenceChef
 
-**Paste a DNA sequence, get its reverse complement, RNA transcript and melting temperature in one click, plus a checklist that tells you whether it works as a PCR primer.**
+**Flip a DNA sequence and convert it to RNA in one click.** Paste a sequence and SequenceChef gives you its reverse complement (the partner strand, read 5′→3′) and its RNA transcript, ready to copy. When the sequence is a primer, it also gives you its melting temperature and a primer checklist.
 
 SequenceChef runs entirely in the browser. There is no account, no server and no upload: the sequence never leaves your computer.
 
@@ -8,7 +8,8 @@ SequenceChef runs entirely in the browser. There is no account, no server and no
 
 ## Contents
 
-- [Why I built it](#why-i-built-it)
+- [Who it is for](#who-it-is-for)
+- [Two ways to use it](#two-ways-to-use-it)
 - [What it does](#what-it-does)
 - [How to use it](#how-to-use-it)
 - [How the numbers are calculated](#how-the-numbers-are-calculated)
@@ -19,13 +20,42 @@ SequenceChef runs entirely in the browser. There is no account, no server and no
 - [About this project](#about-this-project)
 - [Roadmap](#roadmap)
 
-## Why I built it
+## Who it is for
+
+**Molecular biology and biotech students** who work with DNA sequences in courses and lab practicals, and the **lab technicians and researchers** they work with.
 
 DNA is written with four letters, A, T, C and G. Its two strands pair letter by letter (A with T, C with G) and run in opposite directions, so the partner of a strand is found by swapping every letter and reading the result backwards. That is the **reverse complement**. When a cell copies DNA into RNA, T becomes U: that is **transcription**.
 
-Anyone who designs PCR primers does these conversions all the time. PCR copies one region of DNA millions of times, starting from two short synthetic pieces of DNA (the primers) that bind at either end of the region. One of them is the reverse complement of the far end. Doing this by hand means 20–30 letter swaps plus a reversal, and one slip produces a wrong primer that is ordered, paid for and only fails weeks later in the lab. Sequences copied from databases also come with header lines, position numbers and spaces that have to be removed first.
+In exercises and in the lab, these two conversions come up all the time. By hand they mean swapping every base and reversing the order: slow, and one wrong letter gives a wrong answer, a wrong probe, or a wrong primer that is ordered, paid for and only fails later in the lab. Sequences copied from databases also come with header lines, position numbers and spaces that have to be removed first. SequenceChef does all of this in one click, without mistakes.
 
-SequenceChef is for wet-lab molecular biologists and biotech students who want these steps done instantly and correctly, together with the one number they need next: the temperature at which the primer binds.
+## Two ways to use it
+
+Every result screen shows the same outputs. What you paste decides how you use them.
+
+### 1. Convert a sequence: reverse complement and RNA
+
+Paste any DNA sequence, from a database such as NCBI, an exercise or a sequencing result, and get:
+
+- its **reverse complement**: the other strand, read 5′→3′. Use it, for example, to read a gene that sits on the opposite strand, to check a sequencing read made with a reverse primer, or to write the complementary strand in an exercise;
+- its **RNA**: the pasted strand with every T replaced by U. When you paste the coding strand, which is what databases show, this is the sequence of the mRNA the cell makes.
+
+This is the core of the app: one input box, cleaning and validation, both conversions, and a Copy button for each.
+
+### 2. Check a primer: the reverse primer and its Cooking Temperature
+
+PCR copies one region of DNA, starting from two short primers (18–30 bases) that bind at either end:
+
+- the **forward primer** is the first bases of the region, exactly as written (5′→3′);
+- the **reverse primer** is the **reverse complement of the last bases of the region** (the right-hand end).
+
+To get the reverse primer, paste only those last 18–30 bases. The reverse complement on the results screen is the primer to order. Next to it you get:
+
+- its **Cooking Temperature**: the melting temperature (Tm), the temperature at which the primer separates from the DNA it binds to. The PCR binding temperature is chosen from it;
+- the **primer checklist**: length, GC content, Tm range, 3′ end, repeats and self-complementarity.
+
+To check a forward primer instead, paste it and switch the checklist to **Input**.
+
+The checklist only runs on sequences up to 60 nt. SequenceChef does not choose primers inside a long gene for you; you choose the region and paste its end.
 
 ## What it does
 
@@ -98,15 +128,15 @@ If the text contains **more than one FASTA record**, a notice appears and the ap
 
 ### Worked example
 
-Input `AGCCCTCCAGGACAGGCTGCATCA` (24 nt), with the default conditions:
+Input: the first 24 bases of the human insulin mRNA (NCBI NM_000207.3), `AGCCCTCCAGGACAGGCTGCATCA`, with the default conditions:
 
 | Output | Value |
 |---|---|
 | Reverse complement | `TGATGCAGCCTGTCCTGGAGGGCT` |
-| RNA (input strand) | `AGCCCUCCAGGACAGGCUGCAUCA` |
+| RNA of the input strand | `AGCCCUCCAGGACAGGCUGCAUCA`, the start of the insulin mRNA |
 | Length / GC | 24 bp / 62.5 % |
 | Cooking Temperature | 70.2 °C (nearest-neighbour); Wallace rule 78 °C |
-| Primer checklist (reverse complement) | 3 of 8 pass. It warns about GC above 60 %, Tm above 65 °C, too many G/C in the last 5 bases, a 3′ T and possible primer-dimer at the 3′ end |
+| Primer checklist (on the reverse complement) | 3 of 8 pass. It warns about GC above 60 %, Tm above 65 °C, too many G/C in the last 5 bases, a 3′ T and possible primer-dimer at the 3′ end |
 | Active frame | None (no ATG…stop in any frame) |
 
 ## How the numbers are calculated
@@ -204,15 +234,24 @@ Everything runs in your browser. The text you enter is kept in the tab's `sessio
 
 ## About this project
 
-I built SequenceChef as my MVP for course module M2-05, *From an idea to an MVP*. The workbook set the scope: a single input screen, cleaning and validation, reverse complement and RNA with copy buttons, and a melting-temperature twist called **Cooking Temperature Analytics**.
+I built SequenceChef as my MVP for course module M2-05, *From an idea to an MVP*, from the brief "Reverse complement + DNA → RNA: flip a sequence and convert it to RNA". The MVP sheet in my workbook defines it like this:
 
-Some decisions differ from the original workbook plan:
+| | |
+|---|---|
+| **We are building…** | a one-click web tool that flips a DNA sequence (reverse complement) and converts it to RNA… |
+| **…for…** | molecular biology students, and the lab technicians and researchers they work with. |
+| **Main workflow** | Paste a sequence → the app cleans and checks it → Process → copy the reverse complement and the RNA. |
+| **Must-have** | One input box with one button; automatic cleaning and validation that shows which characters are wrong; reverse complement and DNA → RNA in one click, labelled 5′→3′; a Copy button for each result. |
+| **Nice-to-have** | Cooking Temperature (Tm), the twist; live length and GC %; download as `.fasta` or `.txt`. |
+| **Deliberately not built** | Protein translation, automatic primer design, genome (BLAST) search, user accounts or saved history, batch processing of many sequences. |
 
-- **Tm method.** The pitch named the Wallace rule. Wallace is only meant for very short oligos: for the 24-nt workbook example it gives 78 °C against 70.2 °C from the nearest-neighbour model, and for long sequences it gives impossible values. So the app uses the nearest-neighbour model as the main number and keeps Wallace visible as a reference.
-- **RNA** is transcribed from the input strand, as in the workbook example, and every strand is labelled with where it comes from.
+All must-haves and nice-to-haves are in the app. A few things go further than the sheet, or differ from my first draft:
+
+- **Tm method.** My first pitch named the Wallace rule. Wallace is only meant for very short oligos: for the 24-nt example it gives 78 °C against 70.2 °C from the nearest-neighbour model, and for long sequences it gives impossible values. So the main number uses the nearest-neighbour model and Wallace stays visible as a reference.
+- **Primer checklist and editable conditions** were added on top of the Tm, because they answer the question a primer user asks next: will this primer work?
+- **RNA** is transcribed from the pasted strand, as in the workbook example, and every strand is labelled with where it comes from.
 - **The main button** says "Next: Process Sequence" rather than "Cook Sequence", to match the two-step flow in the UI design.
-- **The file uploader and the reading-frame metric** were marked "Remove" in the workbook but were part of the UI design, so they stayed, in a simple form.
-- **Primer checklist, live validation and editable conditions** were added after testing the first version, because they answer the question a primer user asks next: will this primer work?
+- **The file uploader** is a simple version (it only loads the file's text into the box), and the **reading-frame metric** only reports the longest open reading frame. Neither translates the sequence into protein.
 
 ## Roadmap
 
