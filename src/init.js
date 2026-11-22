@@ -9,6 +9,7 @@
 
 import { MOCK_SEQUENCES } from "./mock-data.js";
 import { cleanSequence, validate } from "./calc.js";
+import { readSaved, save } from "./storage.js";
 
 // ---------- 1. Element references ----------
 // Grab every element once at load time instead of querying again on each event.
@@ -27,10 +28,6 @@ for (const sample of MOCK_SEQUENCES) {
   option.textContent = `${sample.name} (${sample.length} bp)`;
   sampleSelect.appendChild(option);
 }
-
-// Key used to hand the raw text to the next screen (results or warning page).
-// It is also read back here, so "Go Back & Edit Sequence" restores the text.
-const STORAGE_KEY = "sequenceChef.rawSequence";
 
 // Accepted file extensions. Must match the `accept` attribute in index.html.
 const ALLOWED_EXTENSIONS = [".fasta", ".fa", ".txt"];
@@ -114,13 +111,8 @@ nextButton.addEventListener("click", () => {
   const raw = textarea.value;
   if (raw.trim() === "") return; // guard: the button should already be disabled
 
-  // sessionStorage can throw in private mode or when storage is blocked.
-  // Wrap it so the screen still moves on if saving fails.
-  try {
-    sessionStorage.setItem(STORAGE_KEY, raw);
-  } catch (error) {
-    console.warn("Could not save the sequence for the next screen.", error);
-  }
+  // The raw text goes to the next screen through sessionStorage (storage.js).
+  save(raw);
 
   const check = validate(cleanSequence(raw));
   window.location.href = check.ok ? "/results.html" : "/invalid.html";
@@ -133,16 +125,7 @@ nextButton.addEventListener("click", () => {
   the key, so that path still opens an empty box. If the browser has already
   put a value back in the box (back button), that value is kept.
 */
-function readSavedSequence() {
-  try {
-    return sessionStorage.getItem(STORAGE_KEY) ?? "";
-  } catch (error) {
-    console.warn("Could not read the saved sequence.", error);
-    return "";
-  }
-}
-
-const saved = readSavedSequence();
+const saved = readSaved();
 if (saved !== "" && textarea.value === "") {
   textarea.value = saved;
   showStatus("Restored your previous sequence", false);
