@@ -53,14 +53,17 @@
 
         <!--
           The text area is the main input. The placeholder is shown only while
-          it is empty. The "input" event (see init.js) enables the Next button
-          as soon as the user has typed or pasted something.
+          it is empty. Its example is a valid one-record FASTA input (the MVP
+          example primer), so input in that shape works; &#10; is a line
+          break. The first line is kept short so it fits a phone screen
+          without breaking a word. The "input" event (see init.js) enables
+          the Next button as soon as the user has typed or pasted something.
         -->
         <label class="visually-hidden" for="sequence-input">Raw DNA sequence</label>
         <textarea
           id="sequence-input"
           class="sequence-input"
-          placeholder="Paste your raw DNA sequence here (e.g., HumIns_gene_v3)"
+          placeholder="Paste a raw DNA sequence, e.g.&#10;>my_primer&#10;AGCCCTCCAGGACAGGCTGCATCA"
           spellcheck="false"
           autocomplete="off"
           aria-describedby="input-stats input-notice"
