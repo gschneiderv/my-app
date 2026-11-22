@@ -239,3 +239,70 @@ export function analyse(raw) {
     coding: findCodingFrame(seq, rc),
   };
 }
+
+// ---------- 7. Screen 1 input checks ----------
+
+/*
+  Splits raw text into FASTA records, so input that holds several sequences
+  (for example a forward and a reverse primer) can be caught before
+  cleanSequence() joins them into one. Header lines are found the same way
+  cleanSequence() finds them: ">" after optional leading spaces.
+
+  A record counts only if it has sequence text: at least one line that still
+  has something left once spaces, digits and "-" are removed (what
+  cleanSequence() removes). Header-only records are skipped. Text before the
+  first header is a record without a header.
+
+  Returns one entry per record, in input order:
+    header  the header line without ">" and surrounding spaces, or null for
+            text before the first header
+    text    the record exactly as typed: its header line and the lines under
+            it, up to the next header line (line breaks included)
+*/
+export function splitFastaRecords(raw) {
+  const records = [];
+  // Line ends are kept (capturing group), so each record's text can be cut
+  // out of the input unchanged: lines sit at even indexes, line ends at odd.
+  const parts = raw.split(/(\r\n?|\n)/);
+
+  let current = { header: null, start: 0, hasSequence: false };
+  let offset = 0;
+
+  for (let i = 0; i < parts.length; i += 2) {
+    const line = parts[i];
+    const trimmed = line.trimStart();
+
+    if (trimmed.startsWith(">")) {
+      if (current.hasSequence) records.push(toRecord(raw, current, offset));
+      current = { header: trimmed.slice(1).trim(), start: offset, hasSequence: false };
+    } else if (!current.hasSequence && /[^\s0-9-]/.test(line)) {
+      current.hasSequence = true;
+    }
+
+    offset += line.length + (parts[i + 1]?.length ?? 0);
+  }
+
+  if (current.hasSequence) records.push(toRecord(raw, current, raw.length));
+  return records;
+}
+
+function toRecord(raw, record, end) {
+  return { header: record.header, text: raw.slice(record.start, end) };
+}
+
+/*
+  GC content, in percent, of a cleaned sequence that may still hold invalid
+  characters (the live check on Screen 1 runs before validation passes).
+  Only A, T, C and G are counted, so a stray N or U does not skew the share.
+  For a valid sequence this equals the GC % on the results page.
+  Returns null when there are no A, T, C or G bases at all.
+*/
+export function gcPercentOfBases(seq) {
+  let gc = 0;
+  let at = 0;
+  for (const base of seq) {
+    if (base === "G" || base === "C") gc += 1;
+    else if (base === "A" || base === "T") at += 1;
+  }
+  return gc + at === 0 ? null : (gc / (gc + at)) * 100;
+}
