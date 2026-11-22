@@ -17,6 +17,7 @@ const COPY_FEEDBACK_MS = 1800;
 
 // ---------- 1. Element references ----------
 // Looked up once, so the render functions below do not query the page again.
+const dashboard = document.getElementById("dashboard");
 const statusChip = document.getElementById("status-chip");
 const computeMs = document.getElementById("compute-ms");
 const resultError = document.getElementById("result-error");
@@ -101,6 +102,7 @@ window.addEventListener("pageshow", (event) => {
 function showResults(r) {
   current = r;
 
+  dashboard.hidden = false;
   resultError.hidden = true;
   rcCard.hidden = false;
   rnaCard.hidden = false;
@@ -138,6 +140,7 @@ function showResults(r) {
 function showError(message) {
   current = null;
 
+  dashboard.hidden = false;
   resultError.textContent = message;
   resultError.hidden = false;
   rcCard.hidden = true;

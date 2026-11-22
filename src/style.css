@@ -646,3 +646,10 @@ body.is-leaving {
   font-size: 12px;
   color: var(--text-muted);
 }
+
+/* ---------- 9. Results view additions ---------- */
+
+/* Shown only when JavaScript is off (results.html <noscript>) */
+.noscript-message {
+  margin: var(--gutter) var(--margin);
+}

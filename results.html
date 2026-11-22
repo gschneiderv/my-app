@@ -47,8 +47,18 @@
     </header>
     <!-- END: App header -->
 
-    <!-- BEGIN: Main dashboard -->
-    <main class="dashboard">
+    <!-- Everything on this page is filled in by src/main.js. -->
+    <noscript>
+      <p class="result-error noscript-message">
+        SequenceChef needs JavaScript to process a sequence. Turn JavaScript on, then reload this page.
+      </p>
+    </noscript>
+
+    <!--
+      BEGIN: Main dashboard. Hidden until main.js has rendered real results,
+      so no sample values show if the script does not run, or before it does.
+    -->
+    <main class="dashboard" id="dashboard" hidden>
       <!--
         Left panel (results). Two read-only "strand" containers.
         Each container: a header bar (label + badge + copy action) and a
@@ -64,8 +74,8 @@
             <h1 id="results-title" class="panel-title">Results</h1>
           </div>
           <div class="status-group">
-            <span class="status-chip" id="status-chip">Validated</span>
-            <span class="compute-time">Computed in <span id="compute-ms">0</span> ms</span>
+            <span class="status-chip" id="status-chip"></span>
+            <span class="compute-time">Computed in <span id="compute-ms"></span> ms</span>
           </div>
         </div>
 
@@ -83,7 +93,7 @@
             <!-- Copies this strand. Enabled by main.js once results exist. -->
             <button type="button" class="btn btn-ghost" id="copy-rc-button" disabled>Copy</button>
           </header>
-          <pre class="strand-body" aria-label="Reverse complement DNA sequence"><code id="rc-sequence">GCCATCCTGCTGCACAAGCCCAGAGGCCCAGAGCTCGTGCTGCAGATCGAGGCCATGGCCGACGTCATCAACAGCCGC</code></pre>
+          <pre class="strand-body" aria-label="Reverse complement DNA sequence"><code id="rc-sequence"></code></pre>
         </article>
 
         <!-- Read-only container: RNA of the input strand (T replaced by U) -->
@@ -96,7 +106,7 @@
             </div>
             <button type="button" class="btn btn-ghost" id="copy-rna-button" disabled>Copy</button>
           </header>
-          <pre class="strand-body" aria-label="RNA of the input strand"><code id="rna-sequence">GCCAUCCUGCUGCACAAGCCCAGAGGCCCAGAGCUCGUGCUGCAGAUCGAGGCCAUGGCCGACGUCAUCAACAGCCGC</code></pre>
+          <pre class="strand-body" aria-label="RNA of the input strand"><code id="rna-sequence"></code></pre>
         </article>
       </section>
 
