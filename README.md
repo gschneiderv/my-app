@@ -1,10 +1,12 @@
-# SequenceChef: MVP brief
+# SequenceChef
 
 <!-- Author: add your name here. -->
 
 **SequenceChef is a browser-only tool that checks a pasted DNA sequence and returns its reverse complement, RNA transcript and estimated melting temperature in one step, for researchers preparing PCR primers.**
 
-Course module M2-05, *From an idea to an MVP*. Describes `main` plus the open pull requests #3 and #4 (see [Status](#7-current-status-and-known-limitations)).
+This README is the MVP brief for course module M2-05, *From an idea to an MVP*. It describes the app as it is on `main` (see [Status](#7-current-status-and-known-limitations)).
+
+**Run locally:** `npm install`, then `npm run dev` (development server) or `npm run build` (production build in `dist/`).
 
 ## 1. Problem
 
@@ -35,7 +37,7 @@ Paste a sequence (or load a file), click once, and get both strands with **Copy*
 | Feature | Workbook | Status |
 |---|---|---|
 | Text box and one start button | Must-have | Done |
-| Clean and validate input | Must-have | In review (PRs #3, #4): strips FASTA headers, whitespace, digits and gaps (`-`), then accepts only A, T, C, G |
+| Clean and validate input | Must-have | Done: strips FASTA headers, whitespace, digits and gaps (`-`), then accepts only A, T, C, G; invalid input goes to a warning screen |
 | Reverse complement and RNA | Must-have | Done |
 | Copy buttons for both strands | Must-have | Done |
 | Tm calculator (the twist) | Must-have | Done |
@@ -61,8 +63,8 @@ flowchart TD
 Invalid input lands on a warning screen that lists each offending character and its positions (below: N and U at positions 12 and 22). Input that is empty after cleaning gets a "No DNA Sequence Found" variant.
 
 <p>
-  <img src="images/results.png" alt="Results screen for the workbook example: both strands, Tm 57.4 °C, length 24 bp, GC 62.5 %" width="49%">
-  <img src="images/invalid-characters.png" alt="Invalid Characters Detected screen flagging N and U at positions 12 and 22" width="49%">
+  <img src="docs/images/results.png" alt="Results screen for the workbook example: both strands, Tm 57.4 °C, length 24 bp, GC 62.5 %" width="49%">
+  <img src="docs/images/invalid-characters.png" alt="Invalid Characters Detected screen flagging N and U at positions 12 and 22" width="49%">
 </p>
 
 ## 6. How it is built
@@ -72,11 +74,9 @@ Invalid input lands on a warning screen that lists each offending character and 
 - **Browser-only:** no backend. The raw text passes between pages in `sessionStorage`, is cleared by "Start New Sequence" and is gone when the tab closes. The sequence is never sent over the network; the only external requests are for Google Fonts.
 - **Measured speed:** the results page times the calculation alone. In headless Chrome on macOS it showed 0.5–1.5 ms for the workbook example and 0.7–1.8 ms for the 717–1,606 bp samples.
 
-Run: `npm install`, then `npm run dev` or `npm run build`.
-
 ## 7. Current status and known limitations
 
-**Status.** PRs #3 (sanitization) and #4 (strict validation and the warning screen) are open at the time of writing. Without them, invalid input shows an inline error on the results page, and digits or gaps are not stripped.
+**Status.** Input sanitization (PR #3) and strict validation with the warning screen (PR #4) are merged. A code review (PR #6) listed bugs and improvements; follow-up work on input handling, the Tm method, the results view and accessibility is in progress and will change several points below.
 
 **Differences from the workbook**
 
@@ -96,8 +96,7 @@ Run: `npm install`, then `npm run dev` or `npm run build`.
 
 ## 8. Next steps
 
-1. Review and merge PRs #3 and #4.
-2. Decide which strand the RNA comes from, label it on screen, and align workbook and code.
-3. Describe both Tm formulas in the pitch, and warn when the input is far longer than a primer.
-4. Add unit tests for the pure functions in `src/calc.js`.
-5. Publish over HTTPS (the clipboard API needs it outside localhost) and replace the static Run ID.
+1. Merge the code-review follow-ups: RNA from the input strand with a clear label, a nearest-neighbour Tm with salt inputs (Wallace kept as a reference), a primer checklist, live validation on Screen 1, and detection of multi-record FASTA.
+2. Update the workbook pitch to describe the Tm method the app uses.
+3. Add unit tests for the pure functions in `src/calc.js`.
+4. Publish over HTTPS (the clipboard API needs it outside localhost) and replace the static Run ID.
