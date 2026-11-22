@@ -109,12 +109,51 @@
           <h2 id="analytics-title" class="panel-title panel-title--sm">Cooking Temperature Analytics</h2>
         </div>
 
-        <div class="metric">
-          <p class="metric-label">Melting Temperature</p>
+        <!--
+          Cooking Temperature card. The big number is the nearest-neighbour Tm
+          at the reaction conditions below; the Wallace rule stays as a quick
+          reference. Filled in and kept up to date by src/temperature.js.
+        -->
+        <div class="metric tm-card" id="tm-card">
+          <p class="metric-label">Cooking Temperature (T<sub>m</sub>)</p>
           <p class="metric-value">
-            <span class="metric-number" id="tm-number">64</span><span class="metric-unit">°C</span>
+            <span class="metric-number" id="tm-number">—</span><span class="metric-unit">°C</span>
           </p>
-          <p class="metric-note" id="tm-note">Wallace rule estimate for the input sequence</p>
+          <p class="metric-note" id="tm-note">Not calculated</p>
+          <p class="tm-wallace">
+            <span class="tm-wallace-name">Wallace rule</span>
+            <span class="tm-wallace-value" id="tm-wallace">—</span>
+            <span class="tm-wallace-hint" id="tm-wallace-hint"></span>
+          </p>
+
+          <fieldset class="tm-conditions" id="tm-conditions">
+            <legend>Reaction conditions</legend>
+            <div class="tm-fields">
+              <div class="tm-field">
+                <label for="tm-monovalent">Na<sup>+</sup>/K<sup>+</sup> (mM)</label>
+                <input id="tm-monovalent" type="number" inputmode="decimal" min="0" max="1000" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+              <div class="tm-field">
+                <label for="tm-magnesium">Mg<sup>2+</sup> (mM)</label>
+                <input id="tm-magnesium" type="number" inputmode="decimal" min="0" max="100" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+              <div class="tm-field">
+                <label for="tm-dntp">dNTPs (mM)</label>
+                <input id="tm-dntp" type="number" inputmode="decimal" min="0" max="100" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+              <div class="tm-field">
+                <label for="tm-oligo">Oligo (nM)</label>
+                <input id="tm-oligo" type="number" inputmode="decimal" min="0.1" max="100000" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+            </div>
+            <p class="tm-conditions-error" id="tm-conditions-error" aria-live="polite"></p>
+            <div class="tm-conditions-footer">
+              <p class="tm-conditions-hint">Defaults are Primer3's: <span id="tm-defaults"></span>.</p>
+              <button type="button" class="btn btn-ghost tm-reset" id="tm-reset">Reset</button>
+            </div>
+          </fieldset>
+          <!-- Announces the new Tm to screen readers after the conditions change. -->
+          <p class="sr-text" id="tm-live" aria-live="polite"></p>
         </div>
 
         <dl class="metric-grid">
@@ -136,6 +175,27 @@
           </div>
         </dl>
       </aside>
+
+      <!--
+        Primer checklist panel: one row per rule, each a pass or a warning with
+        a short reason. Rows come from primerChecklist() in src/calc.js and are
+        drawn by src/temperature.js. Sequences longer than an oligo get a
+        one-line note instead. On wide screens it sits under the results.
+      -->
+      <section class="panel checklist-panel" aria-labelledby="checklist-title">
+        <div class="panel-header">
+          <h2 id="checklist-title" class="panel-title panel-title--sm">Primer Checklist</h2>
+          <p class="checklist-summary" id="checklist-summary"></p>
+        </div>
+        <fieldset class="checklist-strand" id="checklist-strand">
+          <legend>Strand to check as the primer</legend>
+          <label><input type="radio" name="checklist-strand" value="rc" checked autocomplete="off" /> Reverse complement</label>
+          <label><input type="radio" name="checklist-strand" value="input" autocomplete="off" /> Input</label>
+        </fieldset>
+        <p class="checklist-sequence" id="checklist-sequence"></p>
+        <ul class="checklist-list" id="checklist-list"></ul>
+        <p class="checklist-note" id="checklist-note">Not checked</p>
+      </section>
     </main>
     <!-- END: Main dashboard -->
 
