@@ -23,7 +23,7 @@ export function toFasta(r) {
   return [
     `>Reverse_complement_DNA length=${r.length}`,
     wrap(r.reverseComplement, FASTA_LINE_WIDTH),
-    `>Transcribed_RNA length=${r.rna.length}`,
+    `>RNA_from_input_strand length=${r.rna.length}`,
     wrap(r.rna, FASTA_LINE_WIDTH),
     "",
   ].join("\n");
@@ -35,7 +35,7 @@ export function toText(r) {
     "Reverse complement (DNA, 5' to 3'):",
     r.reverseComplement,
     "",
-    "Transcribed strand (RNA, 5' to 3'):",
+    "RNA of the input strand (T to U, 5' to 3'):",
     r.rna,
     "",
   ].join("\n");
@@ -46,7 +46,7 @@ export function toCsv(r) {
   return [
     "strand,length,sequence",
     `reverse_complement_dna,${r.length},${r.reverseComplement}`,
-    `transcribed_rna,${r.rna.length},${r.rna}`,
+    `rna_from_input_strand,${r.rna.length},${r.rna}`,
     "",
   ].join("\n");
 }
@@ -64,7 +64,7 @@ export function toJson(r) {
         coding_strand: r.coding.strand,
         amino_acids: r.coding.aminoAcids,
         reverse_complement_dna: r.reverseComplement,
-        transcribed_rna: r.rna,
+        rna_from_input_strand: r.rna,
       },
       null,
       2,

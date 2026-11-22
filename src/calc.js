@@ -234,7 +234,7 @@ export function analyse(raw) {
     length: seq.length,
     gcPercent: ((counts.G + counts.C) / seq.length) * 100,
     reverseComplement: rc,
-    rna: toRna(rc),
+    rna: toRna(seq),
     melting: meltingTemperature(seq, counts),
     coding: findCodingFrame(seq, rc),
   };
