@@ -22,16 +22,24 @@ const SODIUM_MOLAR = 0.05;
 // ---------- 1. Clean and validate ----------
 
 /*
-  Turns raw text into a plain nucleotide string. It removes FASTA header lines
-  (those starting with ">"), removes all whitespace, and upper-cases the rest,
-  so "acgt" and "ACGT" are treated the same.
+  Sanitises raw pasted text into a plain nucleotide string, so sequences copied
+  from databases such as NCBI work without manual editing. Runs before any
+  calculation, in this order:
+  1. Drops FASTA header lines (starting with ">", even after leading spaces).
+     This works on whole lines and comes first, so text inside a header such
+     as ">seq 12 chr1" can never leak into the sequence.
+  2. Strips alignment gaps ("-"), all whitespace (spaces, tabs, line breaks)
+     and digits 0-9, which removes the row numbers of GenBank-style blocks.
+  3. Upper-cases the rest, so "acgt" and "ACGT" are treated the same.
+  Nothing else is removed on purpose: letters such as U, N or X stay, so
+  validate() can still report them instead of them vanishing silently.
 */
 export function cleanSequence(raw) {
   return raw
-    .split(/\r?\n/)
+    .split(/\r\n?|\n/) // Unix (\n), Windows (\r\n) and old Mac (\r) line ends
     .filter((line) => !line.trimStart().startsWith(">"))
     .join("")
-    .replace(/\s+/g, "")
+    .replace(/[\s0-9-]+/g, "")
     .toUpperCase();
 }
 
