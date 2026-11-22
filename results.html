@@ -2,8 +2,8 @@
 <!--
   SequenceChef: Screen 2 (Results & Analytics dashboard).
 
-  Presentation layer only. There is no calculation logic yet; every value
-  shown here is static placeholder content taken from the design mockups.
+  src/main.js reads the sequence that Screen 1 saved, runs the calculations
+  in src/calc.js and writes the results into this page.
   Structure:
     .app-header   : logo + page title
     .dashboard    : two-column grid (results on the left, analytics on the right)
@@ -54,8 +54,7 @@
         Each container: a header bar (label + badge + copy action) and a
         read-only sequence body. The body is a <pre> so spacing is preserved
         exactly, which keeps base alignment in monospace.
-        Integration note: when the calculation logic is connected, replace the
-        placeholder text inside each <code> element. Nothing else needs to change.
+        main.js writes each strand into its <code> element.
       -->
       <section class="panel results-panel" aria-labelledby="results-title">
         <div class="panel-header">
@@ -197,7 +196,7 @@
 
     <footer class="app-footer">&copy; SequenceChef. All rights reserved.</footer>
 
-    <!-- Logic entry point. Intentionally empty for FE-1. -->
+    <!-- Logic entry point: reads the saved sequence and renders the results. -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
