@@ -216,8 +216,8 @@ button {
 /* ---------- 5. Results panel: read-only strand containers ---------- */
 /*
   Each strand is a card (Layer 2): a header row with a title and an action,
-  then a body that holds the sequence. The body is a <pre> so the sequence
-  keeps its exact spacing and wraps only when it has to.
+  then a body that holds the sequence. The body's scrolling and row layout
+  are in section 9 (strand boxes).
 */
 .strand-card {
   display: flex;
@@ -652,4 +652,42 @@ body.is-leaving {
 /* Shown only when JavaScript is off (results.html <noscript>) */
 .noscript-message {
   margin: var(--gutter) var(--margin);
+}
+
+/*
+  Strand boxes (B5). The body scrolls inside a fixed height (ten rows), so
+  Download and Start New Sequence stay close however long the sequence is.
+  Inside: the position numbers (.strand-ruler) and the bases in groups of
+  10 (.strand-text), side by side. Rows never wrap; strand-view.js picks a
+  row length that fits, and the box scrolls sideways if one ever does not.
+*/
+.strand-body {
+  display: flex;
+  gap: 1rem;
+  max-height: calc(10 * 20px + 2 * var(--gutter));
+  overflow: auto;
+  scrollbar-gutter: stable; /* no reflow when the scrollbar appears */
+  white-space: pre;
+  word-break: normal;
+}
+
+.strand-body:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: -2px;
+}
+
+.strand-ruler,
+.strand-text {
+  flex: none;
+}
+
+/* Blocks of 500 rows. The browser skips laying out blocks that are out of view. */
+.strand-block {
+  content-visibility: auto;
+}
+
+.strand-ruler {
+  text-align: right;
+  color: var(--text-muted);
+  user-select: none;
 }

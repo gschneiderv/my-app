@@ -8,6 +8,7 @@
 
 import { analyse } from "./calc.js";
 import { EXPORT_FORMATS } from "./export.js";
+import { showStrands } from "./strand-view.js";
 
 // Must match STORAGE_KEY in src/init.js. This is the sequence Screen 1 saved.
 const STORAGE_KEY = "sequenceChef.rawSequence";
@@ -110,8 +111,10 @@ function showResults(r) {
   statusChip.textContent = "Validated";
   statusChip.classList.remove("is-error");
 
-  rcSequence.textContent = r.reverseComplement;
-  rnaSequence.textContent = r.rna;
+  showStrands([
+    [rcSequence, r.reverseComplement],
+    [rnaSequence, r.rna],
+  ]);
   copyRcButton.disabled = false;
   copyRnaButton.disabled = false;
   downloadButton.disabled = false;

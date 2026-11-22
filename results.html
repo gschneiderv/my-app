@@ -60,12 +60,13 @@
     -->
     <main class="dashboard" id="dashboard" hidden>
       <!--
-        Left panel (results). Two read-only "strand" containers.
-        Each container: a header bar (label + badge + copy action) and a
-        read-only sequence body. The body is a <pre> so spacing is preserved
-        exactly, which keeps base alignment in monospace.
-        Integration note: when the calculation logic is connected, replace the
-        placeholder text inside each <code> element. Nothing else needs to change.
+        Left panel (results). Read-only "strand" containers.
+        Each container: a header bar (badge + title + copy action) and a body
+        that scrolls inside a fixed height, so long sequences never push the
+        actions off screen. src/strand-view.js fills the body GenBank-style:
+        position numbers in .strand-ruler, bases in groups of 10 in
+        .strand-text. The body is a labelled region, so screen readers can
+        find it and keyboard users can scroll it.
       -->
       <section class="panel results-panel" aria-labelledby="results-title">
         <div class="panel-header">
@@ -87,13 +88,16 @@
           <header class="strand-header">
             <div class="strand-title">
               <span class="strand-tag strand-tag--dna">DNA</span>
-              <h2>Reverse Complement (DNA)</h2>
+              <h2 id="rc-title">Reverse Complement (DNA)</h2>
               <span class="strand-meta">5&prime; → 3&prime;</span>
             </div>
             <!-- Copies this strand. Enabled by main.js once results exist. -->
             <button type="button" class="btn btn-ghost" id="copy-rc-button" disabled>Copy</button>
           </header>
-          <pre class="strand-body" aria-label="Reverse complement DNA sequence"><code id="rc-sequence"></code></pre>
+          <div class="strand-body" role="region" aria-labelledby="rc-title">
+            <div class="strand-ruler" aria-hidden="true"></div>
+            <div class="strand-text" id="rc-sequence"></div>
+          </div>
         </article>
 
         <!-- Read-only container: RNA of the input strand (T replaced by U) -->
@@ -101,12 +105,15 @@
           <header class="strand-header">
             <div class="strand-title">
               <span class="strand-tag strand-tag--rna">RNA</span>
-              <h2>RNA (input strand, T &rarr; U)</h2>
+              <h2 id="rna-title">RNA (input strand, T &rarr; U)</h2>
               <span class="strand-meta">5&prime; → 3&prime;</span>
             </div>
             <button type="button" class="btn btn-ghost" id="copy-rna-button" disabled>Copy</button>
           </header>
-          <pre class="strand-body" aria-label="RNA of the input strand"><code id="rna-sequence"></code></pre>
+          <div class="strand-body" role="region" aria-labelledby="rna-title">
+            <div class="strand-ruler" aria-hidden="true"></div>
+            <div class="strand-text" id="rna-sequence"></div>
+          </div>
         </article>
       </section>
 
