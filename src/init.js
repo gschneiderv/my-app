@@ -1,12 +1,14 @@
 /*
   SequenceChef, Screen 1 (User Initialization) behaviour.
 
-  This file only handles the screen: typing, file loading, test samples and
-  navigation. It does not validate or process the sequence. Those functions
-  come in the calculation ticket and will read the value that this file stores.
+  This file handles the screen: typing, file loading, test samples and
+  navigation. It does not calculate anything. On "Next" it only runs the
+  clean + validate steps from calc.js to choose the next page: the results,
+  or the "Invalid Characters Detected" warning when there is something to fix.
 */
 
 import { MOCK_SEQUENCES } from "./mock-data.js";
+import { cleanSequence, validate } from "./calc.js";
 
 // ---------- 1. Element references ----------
 // Grab every element once at load time instead of querying again on each event.
@@ -26,7 +28,8 @@ for (const sample of MOCK_SEQUENCES) {
   sampleSelect.appendChild(option);
 }
 
-// Key used to hand the sequence to the next screen (read by the results page later).
+// Key used to hand the raw text to the next screen (results or warning page).
+// It is also read back here, so "Go Back & Edit Sequence" restores the text.
 const STORAGE_KEY = "sequenceChef.rawSequence";
 
 // Accepted file extensions. Must match the `accept` attribute in index.html.
@@ -100,23 +103,53 @@ function showStatus(message, isError) {
   uploadStatus.classList.toggle("is-error", isError);
 }
 
-// ---------- 4. Next: pass the input on and open the results screen ----------
+// ---------- 4. Next: save the input and open the right screen ----------
+/*
+  The text is saved exactly as typed (not trimmed or cleaned), so coming back
+  from the warning screen shows the user their own text, not a changed copy.
+  Valid input goes to the results. Anything else, including input that is
+  empty once headers and spaces are removed, goes to the warning screen.
+*/
 nextButton.addEventListener("click", () => {
-  const sequence = textarea.value.trim();
-  if (sequence === "") return; // guard: the button should already be disabled
+  const raw = textarea.value;
+  if (raw.trim() === "") return; // guard: the button should already be disabled
 
   // sessionStorage can throw in private mode or when storage is blocked.
   // Wrap it so the screen still moves on if saving fails.
   try {
-    sessionStorage.setItem(STORAGE_KEY, sequence);
+    sessionStorage.setItem(STORAGE_KEY, raw);
   } catch (error) {
     console.warn("Could not save the sequence for the next screen.", error);
   }
 
-  window.location.href = "/results.html";
+  const check = validate(cleanSequence(raw));
+  window.location.href = check.ok ? "/results.html" : "/invalid.html";
 });
 
 // ---------- 5. Initial state ----------
-// Browsers can keep form values after a reload (back button), so sync the
-// button with whatever is in the box when the page loads.
+/*
+  Restore the last text the user sent on, so "Go Back & Edit Sequence" lands
+  here with the text intact. "Start New Sequence" on the results page clears
+  the key, so that path still opens an empty box. If the browser has already
+  put a value back in the box (back button), that value is kept.
+*/
+function readSavedSequence() {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY) ?? "";
+  } catch (error) {
+    console.warn("Could not read the saved sequence.", error);
+    return "";
+  }
+}
+
+const saved = readSavedSequence();
+if (saved !== "" && textarea.value === "") {
+  textarea.value = saved;
+  showStatus("Restored your previous sequence", false);
+  // Ready to edit, with the caret at the start so a long sequence opens at the top.
+  textarea.setSelectionRange(0, 0);
+  textarea.focus();
+}
+
+// Sync the button with whatever is in the box when the page loads.
 updateNextButton();
