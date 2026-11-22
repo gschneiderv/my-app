@@ -44,7 +44,7 @@ let current = null;
 
 // ---------- 2. Read the saved sequence ----------
 // sessionStorage can throw when storage is blocked. In that case treat it as
-// empty, so the page shows the "no sequence" message instead of breaking.
+// empty, so the user gets the "enter a sequence" screen instead of a broken page.
 function readSavedSequence() {
   try {
     return sessionStorage.getItem(STORAGE_KEY) ?? "";
@@ -64,7 +64,13 @@ computeMs.textContent = (performance.now() - start).toFixed(1);
 if (result.ok) {
   showResults(result);
 } else {
+  // Screen 1 already sends invalid or empty input to the warning screen, so
+  // this only happens when results.html is opened directly (a bookmark, or a
+  // reload after the saved text changed). Clear the placeholder numbers first,
+  // then hand over to the warning screen. replace() keeps this page out of
+  // the history, so Back does not bounce the user here again.
   showError(result.message);
+  window.location.replace("/invalid.html");
 }
 
 // ---------- 4. Render: valid input ----------

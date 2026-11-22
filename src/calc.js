@@ -44,23 +44,61 @@ export function cleanSequence(raw) {
 }
 
 /*
-  Checks that only A, T, C and G remain. If not, the message gives the position
-  of the first bad character, counted in the cleaned sequence.
+  Strict check on the cleaned sequence: only A, T, C and G may remain
+  (/^[ATCG]+$/). Anything else, such as U (RNA), N (ambiguous base) or a typo
+  like X, would corrupt the melting temperature, so the pipeline stops here.
+
+  The result carries everything the warning screen needs, so it does not have
+  to scan the sequence again:
+    ok            true only for a non-empty, pure A/T/C/G sequence
+    empty         true when nothing is left after cleaning
+    message       one-line summary, for places that show plain text
+    invalidChars  each offending character once, in order of first appearance
+    invalidCount  how many offending characters there are in total
+    positions     1-based position of every offending character, counted in
+                  the cleaned sequence (the same numbering as the results)
 */
 export function validate(seq) {
   if (seq.length === 0) {
-    return { ok: false, message: "No sequence was entered." };
-  }
-
-  const badIndex = seq.search(/[^ACGT]/);
-  if (badIndex !== -1) {
     return {
       ok: false,
-      message: `Invalid character "${seq[badIndex]}" at position ${badIndex + 1}. Only A, T, C and G are allowed.`,
+      empty: true,
+      message: "No DNA sequence was entered.",
+      invalidChars: [],
+      invalidCount: 0,
+      positions: [],
     };
   }
 
-  return { ok: true, message: "" };
+  if (/^[ATCG]+$/.test(seq)) {
+    return { ok: true, empty: false, message: "", invalidChars: [], invalidCount: 0, positions: [] };
+  }
+
+  // Only invalid input gets this far, so valid sequences pay for one regex
+  // test and nothing else. for...of walks whole characters, so an emoji or
+  // other two-unit character counts as one position, as the user sees it.
+  const invalidChars = [];
+  const positions = [];
+  let position = 0;
+  for (const char of seq) {
+    position += 1;
+    if (!"ATCG".includes(char)) {
+      positions.push(position);
+      if (!invalidChars.includes(char)) invalidChars.push(char);
+    }
+  }
+
+  const count = positions.length;
+  return {
+    ok: false,
+    empty: false,
+    message:
+      `Found ${count} invalid character${count === 1 ? "" : "s"} (${invalidChars.join(", ")}), ` +
+      `first at position ${positions[0]}. Only A, T, C and G are allowed.`,
+    invalidChars,
+    invalidCount: count,
+    positions,
+  };
 }
 
 // ---------- 2. Composition ----------
@@ -178,13 +216,14 @@ export function findCodingFrame(seq, rc) {
 
 /*
   Runs every step on raw input text. This is the only function main.js calls.
-  Invalid input returns { ok: false, message }. Valid input returns the results.
+  Invalid input returns the validate() result as is (ok: false, plus the
+  message and the details). Valid input returns the results.
 */
 export function analyse(raw) {
   const seq = cleanSequence(raw);
   const check = validate(seq);
   if (!check.ok) {
-    return { ok: false, message: check.message };
+    return check;
   }
 
   const counts = countBases(seq);

@@ -1,0 +1,181 @@
+<!doctype html>
+<!--
+  SequenceChef: "Invalid Characters Detected" (soft validation warning).
+
+  Screen 1 opens this page instead of the results when the cleaned sequence
+  is empty or contains anything other than A, T, C and G. It explains the
+  problem calmly and sends the user back to Screen 1, where the text they
+  typed is restored so they only have to fix the typo.
+
+  It shares the dark workspace, brand, white card, button and footer with
+  Screen 1. invalid.css imports init.css and adds only what is new here.
+
+  Structure:
+    .alert-badge    : amber warning icon
+    .invalid-copy   : heading + explanation (one block per case, see below)
+    .info-grid      : "Accepted Nucleotides" and "Offending Tokens Flagged"
+    .invalid-actions: "Go Back & Edit Sequence"
+    .invalid-steps  : the app's 2-step tracker, step 1 flagged for review
+
+  Two cases share the page. src/invalid.js shows one and hides the other:
+    #copy-invalid   : characters outside A/T/C/G were found (default)
+    #copy-empty     : nothing was left after cleaning (header or numbers only)
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>SequenceChef - Invalid Characters Detected</title>
+
+    <!-- Inter (UI text) and JetBrains Mono (nucleotides, counts). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- invalid.css imports init.css first (shared Screen 1 styles). -->
+    <link rel="stylesheet" href="/src/invalid.css" />
+  </head>
+
+  <body>
+    <div class="init-page">
+      <!-- BEGIN: Brand (same as Screen 1) -->
+      <header class="init-brand">
+        <svg class="brand-mark" viewBox="0 0 44 44" aria-hidden="true">
+          <path d="M12 12L32 32M32 12L12 32" opacity="0.4" stroke="#22d3ee" stroke-linecap="round" stroke-width="3" />
+          <path d="M10 22C10 22 17 14 22 22C27 30 34 22 34 22" stroke="#10b981" stroke-linecap="round" stroke-width="3.5" fill="none" />
+          <circle cx="10" cy="22" r="5" fill="#38bdf8" />
+          <circle cx="34" cy="22" r="5" fill="#10b981" />
+          <circle cx="22" cy="14" r="3.5" fill="#22d3ee" />
+          <circle cx="22" cy="30" r="3.5" fill="#059669" />
+        </svg>
+        <span class="brand-name"><span>Sequence</span><span class="brand-accent">Chef</span></span>
+      </header>
+      <!-- END: Brand -->
+
+      <!-- BEGIN: Warning card -->
+      <main class="init-card invalid-card">
+        <!-- Warm amber badge. Inline SVG, like the other icons in the app. -->
+        <div class="alert-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" fill="currentColor" />
+            <path d="M12 9v4.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
+            <circle cx="12" cy="17.25" r="1.25" fill="#ffffff" />
+          </svg>
+        </div>
+
+        <!--
+          The copy says what is removed automatically (sanitization step), so
+          the user only looks for the letters or symbols that are really wrong.
+        -->
+        <div class="invalid-copy" id="copy-invalid">
+          <h1 class="invalid-title">Invalid Characters Detected</h1>
+          <p class="invalid-lead">
+            Please ensure your input sequence contains only valid DNA nucleotide bases: Adenine (A),
+            Thymine (T), Cytosine (C), and Guanine (G). Spaces, line breaks, numbers, alignment gaps (-)
+            and FASTA headers are removed automatically; any other letter or symbol, such as U, N or X,
+            is flagged below.
+          </p>
+        </div>
+
+        <div class="invalid-copy" id="copy-empty" hidden>
+          <h1 class="invalid-title">No DNA Sequence Found</h1>
+          <p class="invalid-lead">
+            After removing spaces, line breaks, numbers, alignment gaps (-) and FASTA headers, there was
+            nothing left to process. Please go back and enter a DNA sequence using the bases A, T, C
+            and G.
+          </p>
+        </div>
+
+        <!-- BEGIN: Info cards -->
+        <div class="info-grid" id="info-grid">
+          <!-- What the app accepts. Static: the alphabet never changes. -->
+          <section class="info-card info-card--accepted" aria-labelledby="accepted-title">
+            <div>
+              <div class="info-card-header">
+                <h2 class="info-card-title" id="accepted-title">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" fill="currentColor" />
+                    <path d="m7.5 12.5 3 3 6-6" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                  </svg>
+                  Accepted Nucleotides
+                </h2>
+                <span class="info-chip">Canonical</span>
+              </div>
+              <p class="info-card-note">Strict single-strand DNA alphabet</p>
+            </div>
+            <ul class="token-list" aria-label="Accepted bases">
+              <li class="token token--accepted">A</li>
+              <li class="token token--accepted">T</li>
+              <li class="token token--accepted">C</li>
+              <li class="token token--accepted">G</li>
+            </ul>
+          </section>
+
+          <!--
+            What was found. invalid.js fills the count, the positions and one
+            tile per distinct character (plus "+N more" when capped). Hidden in
+            the empty case.
+          -->
+          <section class="info-card info-card--flagged" id="offending-card" aria-labelledby="offending-title">
+            <div>
+              <div class="info-card-header">
+                <h2 class="info-card-title" id="offending-title">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" fill="currentColor" />
+                    <path d="M12 7v6" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
+                    <circle cx="12" cy="16.75" r="1.25" fill="#ffffff" />
+                  </svg>
+                  Offending Tokens Flagged
+                </h2>
+                <span class="info-chip" id="found-count"></span>
+              </div>
+              <p class="info-card-note" id="positions-text"></p>
+            </div>
+            <ul class="token-list" id="token-list" aria-label="Invalid characters found"></ul>
+          </section>
+        </div>
+        <!-- END: Info cards -->
+
+        <!--
+          The only action. A plain link: going back has no side effects, and
+          Screen 1 restores the saved text by itself.
+        -->
+        <div class="invalid-actions">
+          <a class="btn-primary back-button" href="/">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M19 12H5" />
+              <path d="m12 19-7-7 7-7" />
+            </svg>
+            Go Back &amp; Edit Sequence
+          </a>
+        </div>
+
+        <!-- BEGIN: 2-step progress tracker (the app's real steps, as on the results page) -->
+        <nav class="invalid-steps-nav" aria-label="Progress">
+          <ol class="invalid-steps">
+            <li class="invalid-step invalid-step--flagged" aria-current="step">
+              <span class="invalid-step-name">Step 1: Sequence Load</span>
+              <span class="invalid-step-note">Flagged for review</span>
+              <span class="invalid-step-bar" aria-hidden="true"></span>
+            </li>
+            <li class="invalid-step">
+              <span class="invalid-step-name">Step 2: Results &amp; Analytics</span>
+              <span class="invalid-step-note">Waiting for a valid sequence</span>
+              <span class="invalid-step-bar" aria-hidden="true"></span>
+            </li>
+          </ol>
+        </nav>
+        <!-- END: 2-step progress tracker -->
+      </main>
+      <!-- END: Warning card -->
+
+      <footer class="init-footer">&copy; SequenceChef. All rights reserved.</footer>
+    </div>
+
+    <script type="module" src="/src/invalid.js"></script>
+  </body>
+</html>
