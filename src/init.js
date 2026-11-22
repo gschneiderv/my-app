@@ -8,12 +8,12 @@
 
   Some input never leaves this screen, because the next pages could not
   show correct results for it. Next then stays here and a notice under the
-  text area says why: the input is too large, or it could not be saved for
-  the next page.
+  text area says why: the input is too large, it holds more than one FASTA
+  record, or it could not be saved for the next page.
 */
 
 import { MOCK_SEQUENCES } from "./mock-data.js";
-import { cleanSequence, validate } from "./calc.js";
+import { cleanSequence, validate, splitFastaRecords } from "./calc.js";
 import { readSaved, save } from "./storage.js";
 
 // ---------- 1. Element references ----------
@@ -26,6 +26,7 @@ const nextButton = document.getElementById("next-button");
 const sampleSelect = document.getElementById("sample-select");
 const noticeBox = document.getElementById("input-notice-box");
 const inputNotice = document.getElementById("input-notice");
+const keepFirstButton = document.getElementById("keep-first-button");
 
 // Fill the sample picker from the dataset, so adding a sample to mock-data.js
 // is enough to make it appear here.
@@ -151,6 +152,23 @@ function checkInput() {
     return true;
   }
 
+  /*
+    Several FASTA records would be merged into one sequence by
+    cleanSequence(), giving results for a sequence that does not exist
+    (review B2). Never merge silently: stop here and offer to keep the first
+    record. Text without any ">" is always a single record, so it is not
+    scanned at all.
+  */
+  const records = raw.includes(">") ? splitFastaRecords(raw) : [];
+  if (records.length > 1) {
+    showNotice(
+      `${formatNumber(records.length)} records detected`,
+      "– SequenceChef processes one sequence at a time. Remove the extra records, or keep only the first.",
+      { offerKeepFirst: true },
+    );
+    return true;
+  }
+
   clearNotice();
   return false;
 }
@@ -159,11 +177,17 @@ function checkInput() {
   The notice is a live region (role="status" in index.html), so a new
   message is announced. Setting the same text again is skipped, so it is
   not read out again on every keystroke.
+  kind "error" (amber) means Next will not continue; "info" (green)
+  confirms an action and does not block anything.
 */
-function showNotice(title, detail) {
-  noticeBox.classList.add("is-error");
-  textarea.classList.add("is-blocked");
-  textarea.setAttribute("aria-invalid", "true");
+function showNotice(title, detail, { kind = "error", offerKeepFirst = false } = {}) {
+  const isError = kind === "error";
+  noticeBox.classList.toggle("is-error", isError);
+  noticeBox.classList.toggle("is-info", !isError);
+  textarea.classList.toggle("is-blocked", isError);
+  if (isError) textarea.setAttribute("aria-invalid", "true");
+  else textarea.removeAttribute("aria-invalid");
+  keepFirstButton.hidden = !offerKeepFirst;
 
   if (inputNotice.textContent === `${title} ${detail}`) return;
   const strong = document.createElement("strong");
@@ -172,11 +196,40 @@ function showNotice(title, detail) {
 }
 
 function clearNotice() {
-  noticeBox.classList.remove("is-error");
+  noticeBox.classList.remove("is-error", "is-info");
   textarea.classList.remove("is-blocked");
   textarea.removeAttribute("aria-invalid");
+  keepFirstButton.hidden = true;
   inputNotice.replaceChildren();
 }
+
+/*
+  "Keep first record only": replaces the text with the first record, exactly
+  as typed (header line included), and drops the rest. The button hides once
+  there is a single record, so focus moves to the text area instead of being
+  lost with it.
+*/
+keepFirstButton.addEventListener("click", () => {
+  const records = splitFastaRecords(textarea.value);
+  if (records.length > 1) {
+    textarea.value = records[0].text.trimEnd();
+    updateNextButton();
+    if (!checkInput()) {
+      const removed = records.length - 1;
+      showNotice(
+        "Kept the first record.",
+        `Removed ${formatNumber(removed)} other record${removed === 1 ? "" : "s"}.`,
+        { kind: "info" },
+      );
+    }
+  } else {
+    checkInput(); // the text changed since the notice appeared
+  }
+
+  textarea.focus();
+  textarea.setSelectionRange(0, 0);
+  textarea.scrollTop = 0;
+});
 
 // 1234567 -> "1,234,567", the same format as the other screens.
 function formatNumber(n) {

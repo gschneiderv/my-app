@@ -72,9 +72,13 @@
           message is announced, and the text area points to it with
           aria-describedby. It stays in the page while empty, because a live
           region that appears at the same time as its text is often not read.
+          The button is shown only when the input holds several FASTA records.
         -->
         <div class="input-notice" id="input-notice-box">
           <p class="input-notice-text" id="input-notice" role="status"></p>
+          <button type="button" class="btn-secondary" id="keep-first-button" hidden>
+            Keep first record only
+          </button>
         </div>
 
         <!--
