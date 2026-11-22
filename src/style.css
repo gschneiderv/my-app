@@ -701,3 +701,11 @@ body.is-leaving {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* The FASTA ID next to the input title. Long IDs end in "…" (full ID on hover). */
+.strand-id {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

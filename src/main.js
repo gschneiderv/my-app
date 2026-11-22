@@ -7,7 +7,7 @@
 */
 
 import { analyse, cleanSequence } from "./calc.js";
-import { EXPORT_FORMATS } from "./export.js";
+import { EXPORT_FORMATS, fastaId, downloadBaseName } from "./export.js";
 import { showStrands } from "./strand-view.js";
 
 // Must match STORAGE_KEY in src/init.js. This is the sequence Screen 1 saved.
@@ -26,6 +26,7 @@ const inputCard = document.getElementById("input-card");
 const rcCard = document.getElementById("rc-card");
 const rnaCard = document.getElementById("rna-card");
 const inputSequence = document.getElementById("input-sequence");
+const inputId = document.getElementById("input-id");
 const rcSequence = document.getElementById("rc-sequence");
 const rnaSequence = document.getElementById("rna-sequence");
 const copyInputButton = document.getElementById("copy-input-button");
@@ -104,10 +105,10 @@ window.addEventListener("pageshow", (event) => {
 });
 
 // ---------- 4. Render: valid input ----------
-// `raw` is the saved text. The cleaned input is shown and exported next to
-// the results, so the user can check what was processed.
+// `raw` is the saved text. The cleaned input and its FASTA ID are shown and
+// exported next to the results, so the user can check what was processed.
 function showResults(r, raw) {
-  current = { ...r, input: cleanSequence(raw) };
+  current = { ...r, input: cleanSequence(raw), fastaId: fastaId(raw) };
 
   dashboard.hidden = false;
   resultError.hidden = true;
@@ -123,6 +124,9 @@ function showResults(r, raw) {
     [rcSequence, r.reverseComplement],
     [rnaSequence, r.rna],
   ]);
+  inputId.textContent = `ID: ${current.fastaId}`;
+  inputId.title = current.fastaId; // the full ID, if the label is cut short
+  inputId.hidden = current.fastaId === "";
   copyInputButton.disabled = false;
   copyRcButton.disabled = false;
   copyRnaButton.disabled = false;
@@ -253,7 +257,7 @@ downloadMenu.addEventListener("click", (event) => {
   if (!item || !current) return;
 
   const format = EXPORT_FORMATS.find((f) => f.id === item.dataset.format);
-  saveFile(format.build(current), format.mime, `sequencechef-results.${format.extension}`);
+  saveFile(format.build(current), format.mime, `${downloadBaseName(current.fastaId)}.${format.extension}`);
   setMenuOpen(false);
 });
 
