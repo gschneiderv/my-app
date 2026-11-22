@@ -26,7 +26,7 @@
   /* Text */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-muted: #8b9bb0; /* at least 5.1:1 on every surface, so small text passes WCAG AA */
 
   /* Brand accents */
   --primary: #10b981; /* emerald: success, primary action */
@@ -275,7 +275,7 @@ button {
 }
 
 .strand-tag--rna {
-  color: var(--base-u);
+  color: #a78bfa; /* lighter than --base-u so the 10px label passes 4.5:1 */
   border-color: rgba(139, 92, 246, 0.3);
   background: rgba(139, 92, 246, 0.12);
 }
