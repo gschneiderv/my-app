@@ -7,6 +7,7 @@
 */
 
 import { analyse } from "./calc.js";
+import { showTemperature, clearTemperature } from "./temperature.js";
 import { EXPORT_FORMATS } from "./export.js";
 import { readSaved, clear } from "./storage.js";
 
@@ -24,8 +25,6 @@ const rcSequence = document.getElementById("rc-sequence");
 const rnaSequence = document.getElementById("rna-sequence");
 const copyRcButton = document.getElementById("copy-rc-button");
 const copyRnaButton = document.getElementById("copy-rna-button");
-const tmNumber = document.getElementById("tm-number");
-const tmNote = document.getElementById("tm-note");
 const metricLength = document.getElementById("metric-length");
 const metricGc = document.getElementById("metric-gc");
 const metricFrame = document.getElementById("metric-frame");
@@ -80,9 +79,8 @@ function showResults(r) {
   copyRnaButton.disabled = false;
   downloadButton.disabled = false;
 
-  // Round to one decimal. Short sequences give whole numbers, which print as "24".
-  tmNumber.textContent = Number(r.melting.value.toFixed(1)).toString();
-  tmNote.textContent = r.melting.method;
+  // Tm card (with its reaction conditions) and primer checklist.
+  showTemperature(r);
 
   metricLength.textContent = r.length.toLocaleString("en-US");
   metricGc.textContent = r.gcPercent.toFixed(1);
@@ -116,8 +114,7 @@ function showError(message) {
   copyRnaButton.disabled = true;
   downloadButton.disabled = true;
 
-  tmNumber.textContent = "—";
-  tmNote.textContent = "Not calculated";
+  clearTemperature();
   metricLength.textContent = "—";
   metricGc.textContent = "—";
   metricFrame.textContent = "—";
@@ -158,19 +155,24 @@ copyRnaButton.addEventListener("click", () => {
 });
 
 // ---------- 7. Download menu ----------
-// Builds one menu item per format in EXPORT_FORMATS. Each item downloads the
-// file in that format.
+// A disclosure: the button shows or hides a list with one button per format
+// in EXPORT_FORMATS, and Tab moves through them like any other buttons. Each
+// item downloads the file in that format.
 for (const format of EXPORT_FORMATS) {
   const item = document.createElement("button");
   item.type = "button";
   item.className = "menu-item";
-  item.setAttribute("role", "menuitem");
   item.textContent = `${format.label} (.${format.extension})`;
   item.dataset.format = format.id;
-  downloadMenu.appendChild(item);
+  const listItem = document.createElement("li");
+  listItem.appendChild(item);
+  downloadMenu.appendChild(listItem);
 }
 
 function setMenuOpen(open) {
+  // Hiding the list would drop focus to the page if an item has it, so send
+  // focus back to the button first.
+  if (!open && downloadMenu.contains(document.activeElement)) downloadButton.focus();
   downloadMenu.hidden = !open;
   downloadButton.setAttribute("aria-expanded", String(open));
 }
@@ -198,6 +200,14 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !downloadMenu.hidden) {
     setMenuOpen(false);
     downloadButton.focus();
+  }
+});
+
+// Also closes it when Tab or Shift+Tab moves focus out of the download area.
+// relatedTarget is null when focus leaves the window; the menu stays open then.
+downloadWrapper.addEventListener("focusout", (event) => {
+  if (event.relatedTarget && !downloadWrapper.contains(event.relatedTarget)) {
+    setMenuOpen(false);
   }
 });
 

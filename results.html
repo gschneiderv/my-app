@@ -2,8 +2,8 @@
 <!--
   SequenceChef: Screen 2 (Results & Analytics dashboard).
 
-  Presentation layer only. There is no calculation logic yet; every value
-  shown here is static placeholder content taken from the design mockups.
+  src/main.js reads the sequence that Screen 1 saved, runs the calculations
+  in src/calc.js and writes the results into this page.
   Structure:
     .app-header   : logo + page title
     .dashboard    : two-column grid (results on the left, analytics on the right)
@@ -54,8 +54,7 @@
         Each container: a header bar (label + badge + copy action) and a
         read-only sequence body. The body is a <pre> so spacing is preserved
         exactly, which keeps base alignment in monospace.
-        Integration note: when the calculation logic is connected, replace the
-        placeholder text inside each <code> element. Nothing else needs to change.
+        main.js writes each strand into its <code> element.
       -->
       <section class="panel results-panel" aria-labelledby="results-title">
         <div class="panel-header">
@@ -110,33 +109,93 @@
           <h2 id="analytics-title" class="panel-title panel-title--sm">Cooking Temperature Analytics</h2>
         </div>
 
-        <div class="metric">
-          <p class="metric-label">Melting Temperature</p>
+        <!--
+          Cooking Temperature card. The big number is the nearest-neighbour Tm
+          at the reaction conditions below; the Wallace rule stays as a quick
+          reference. Filled in and kept up to date by src/temperature.js.
+        -->
+        <div class="metric tm-card" id="tm-card">
+          <p class="metric-label">Cooking Temperature (T<sub>m</sub>)</p>
           <p class="metric-value">
-            <span class="metric-number" id="tm-number">64</span><span class="metric-unit">°C</span>
+            <span class="metric-number" id="tm-number">—</span><span class="metric-unit">°C</span>
           </p>
-          <p class="metric-note" id="tm-note">Wallace rule estimate for the input sequence</p>
+          <p class="metric-note" id="tm-note">Not calculated</p>
+          <p class="tm-wallace">
+            <span class="tm-wallace-name">Wallace rule</span>
+            <span class="tm-wallace-value" id="tm-wallace">—</span>
+            <span class="tm-wallace-hint" id="tm-wallace-hint"></span>
+          </p>
+
+          <fieldset class="tm-conditions" id="tm-conditions">
+            <legend>Reaction conditions</legend>
+            <div class="tm-fields">
+              <div class="tm-field">
+                <label for="tm-monovalent">Na<sup>+</sup>/K<sup>+</sup> (mM)</label>
+                <input id="tm-monovalent" type="number" inputmode="decimal" min="0" max="1000" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+              <div class="tm-field">
+                <label for="tm-magnesium">Mg<sup>2+</sup> (mM)</label>
+                <input id="tm-magnesium" type="number" inputmode="decimal" min="0" max="100" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+              <div class="tm-field">
+                <label for="tm-dntp">dNTPs (mM)</label>
+                <input id="tm-dntp" type="number" inputmode="decimal" min="0" max="100" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+              <div class="tm-field">
+                <label for="tm-oligo">Oligo (nM)</label>
+                <input id="tm-oligo" type="number" inputmode="decimal" min="0.1" max="100000" step="any" autocomplete="off" aria-describedby="tm-conditions-error" />
+              </div>
+            </div>
+            <p class="tm-conditions-error" id="tm-conditions-error" aria-live="polite"></p>
+            <div class="tm-conditions-footer">
+              <p class="tm-conditions-hint">Defaults are Primer3's: <span id="tm-defaults"></span>.</p>
+              <button type="button" class="btn btn-ghost tm-reset" id="tm-reset">Reset</button>
+            </div>
+          </fieldset>
+          <!-- Announces the new Tm to screen readers after the conditions change. -->
+          <p class="sr-text" id="tm-live" aria-live="polite"></p>
         </div>
 
         <dl class="metric-grid">
           <div>
             <dt>Input Length</dt>
-            <dd><output id="metric-length">1,432</output> <span>bp</span></dd>
+            <dd><span id="metric-length">1,432</span> <span class="metric-grid-unit">bp</span></dd>
           </div>
           <div>
             <dt>GC Density</dt>
-            <dd><output id="metric-gc">53.4</output> <span>%</span></dd>
+            <dd><span id="metric-gc">53.4</span> <span class="metric-grid-unit">%</span></dd>
           </div>
           <div>
             <dt>Active Frame</dt>
-            <dd><output id="metric-frame">+1</output> <span id="metric-strand">Sense</span></dd>
+            <dd><span id="metric-frame">+1</span> <span class="metric-grid-unit" id="metric-strand">Sense</span></dd>
           </div>
           <div>
             <dt>Coding Yield</dt>
-            <dd><output id="metric-yield">110</output> <span>aa</span></dd>
+            <dd><span id="metric-yield">110</span> <span class="metric-grid-unit">aa</span></dd>
           </div>
         </dl>
       </aside>
+
+      <!--
+        Primer checklist panel: one row per rule, each a pass or a warning with
+        a short reason. Rows come from primerChecklist() in src/calc.js and are
+        drawn by src/temperature.js. Sequences longer than an oligo get a
+        one-line note instead. On wide screens it sits under the results.
+      -->
+      <section class="panel checklist-panel" aria-labelledby="checklist-title">
+        <div class="panel-header">
+          <h2 id="checklist-title" class="panel-title panel-title--sm">Primer Checklist</h2>
+          <p class="checklist-summary" id="checklist-summary"></p>
+        </div>
+        <fieldset class="checklist-strand" id="checklist-strand">
+          <legend>Strand to check as the primer</legend>
+          <label><input type="radio" name="checklist-strand" value="rc" checked autocomplete="off" /> Reverse complement</label>
+          <label><input type="radio" name="checklist-strand" value="input" autocomplete="off" /> Input</label>
+        </fieldset>
+        <p class="checklist-sequence" id="checklist-sequence"></p>
+        <ul class="checklist-list" id="checklist-list"></ul>
+        <p class="checklist-note" id="checklist-note">Not checked</p>
+      </section>
     </main>
     <!-- END: Main dashboard -->
 
@@ -147,12 +206,14 @@
     -->
     <div class="screen-actions">
       <!--
-        Download menu. The button opens a list of formats. Choosing one saves
-        both strands and the metrics in that format. The list is built in main.js
-        from EXPORT_FORMATS in src/export.js.
+        Download menu. The button shows or hides a list of formats. It is a
+        disclosure (a button plus a list of buttons), not an ARIA menu, so Tab
+        moves through the formats. Choosing one saves both strands and the
+        metrics in that format. The list is built in main.js from
+        EXPORT_FORMATS in src/export.js.
       -->
       <div class="download">
-        <button type="button" class="btn-secondary" id="download-button" aria-haspopup="true" aria-expanded="false" disabled>
+        <button type="button" class="btn-secondary" id="download-button" aria-expanded="false" aria-controls="download-menu" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 4v11" />
             <path d="M7 10l5 5 5-5" />
@@ -163,7 +224,7 @@
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
-        <div class="download-menu" id="download-menu" role="menu" hidden></div>
+        <ul class="download-menu" id="download-menu" aria-label="Download formats" hidden></ul>
       </div>
 
       <button type="button" class="btn-secondary" id="new-sequence-button">
@@ -195,7 +256,7 @@
 
     <footer class="app-footer">&copy; SequenceChef. All rights reserved.</footer>
 
-    <!-- Logic entry point. Intentionally empty for FE-1. -->
+    <!-- Logic entry point: reads the saved sequence and renders the results. -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
