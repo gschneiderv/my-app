@@ -663,10 +663,12 @@ body.is-leaving {
 */
 .strand-body {
   display: flex;
+  align-items: flex-start; /* columns as tall as their rows, not the box */
   gap: 1rem;
   max-height: calc(10 * 20px + 2 * var(--gutter));
   overflow: auto;
   scrollbar-gutter: stable; /* no reflow when the scrollbar appears */
+  padding-bottom: 0; /* moved to the columns, see below */
   white-space: pre;
   word-break: normal;
 }
@@ -676,9 +678,11 @@ body.is-leaving {
   outline-offset: -2px;
 }
 
+/* The bottom padding sits on the columns, so it also shows after the last row when scrolled to the end. */
 .strand-ruler,
 .strand-text {
   flex: none;
+  padding-bottom: var(--gutter);
 }
 
 /* Blocks of 500 rows. The browser skips laying out blocks that are out of view. */
