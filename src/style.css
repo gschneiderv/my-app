@@ -691,3 +691,13 @@ body.is-leaving {
   color: var(--text-muted);
   user-select: none;
 }
+
+/* Hidden on screen but still read by screen readers (the copy live region) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

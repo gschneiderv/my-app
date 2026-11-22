@@ -6,7 +6,7 @@
   and "Start New Sequence".
 */
 
-import { analyse } from "./calc.js";
+import { analyse, cleanSequence } from "./calc.js";
 import { EXPORT_FORMATS } from "./export.js";
 import { showStrands } from "./strand-view.js";
 
@@ -22,12 +22,16 @@ const dashboard = document.getElementById("dashboard");
 const statusChip = document.getElementById("status-chip");
 const computeMs = document.getElementById("compute-ms");
 const resultError = document.getElementById("result-error");
+const inputCard = document.getElementById("input-card");
 const rcCard = document.getElementById("rc-card");
 const rnaCard = document.getElementById("rna-card");
+const inputSequence = document.getElementById("input-sequence");
 const rcSequence = document.getElementById("rc-sequence");
 const rnaSequence = document.getElementById("rna-sequence");
+const copyInputButton = document.getElementById("copy-input-button");
 const copyRcButton = document.getElementById("copy-rc-button");
 const copyRnaButton = document.getElementById("copy-rna-button");
+const copyStatus = document.getElementById("copy-status");
 const tmNumber = document.getElementById("tm-number");
 const tmNote = document.getElementById("tm-note");
 const metricLength = document.getElementById("metric-length");
@@ -83,7 +87,7 @@ function render() {
       window.location.replace(raw === "" ? "/" : "/invalid.html");
       return;
     }
-    showResults(result);
+    showResults(result, raw);
   }
   document.body.classList.remove("is-leaving");
 }
@@ -100,11 +104,14 @@ window.addEventListener("pageshow", (event) => {
 });
 
 // ---------- 4. Render: valid input ----------
-function showResults(r) {
-  current = r;
+// `raw` is the saved text. The cleaned input is shown and exported next to
+// the results, so the user can check what was processed.
+function showResults(r, raw) {
+  current = { ...r, input: cleanSequence(raw) };
 
   dashboard.hidden = false;
   resultError.hidden = true;
+  inputCard.hidden = false;
   rcCard.hidden = false;
   rnaCard.hidden = false;
 
@@ -112,9 +119,11 @@ function showResults(r) {
   statusChip.classList.remove("is-error");
 
   showStrands([
+    [inputSequence, current.input],
     [rcSequence, r.reverseComplement],
     [rnaSequence, r.rna],
   ]);
+  copyInputButton.disabled = false;
   copyRcButton.disabled = false;
   copyRnaButton.disabled = false;
   downloadButton.disabled = false;
@@ -146,12 +155,14 @@ function showError(message) {
   dashboard.hidden = false;
   resultError.textContent = message;
   resultError.hidden = false;
+  inputCard.hidden = true;
   rcCard.hidden = true;
   rnaCard.hidden = true;
 
   statusChip.textContent = "Invalid input";
   statusChip.classList.add("is-error");
 
+  copyInputButton.disabled = true;
   copyRcButton.disabled = true;
   copyRnaButton.disabled = true;
   downloadButton.disabled = true;
@@ -166,19 +177,32 @@ function showError(message) {
 }
 
 // ---------- 6. Copy a strand ----------
-// Writes the strand to the clipboard (the same as Ctrl+C on a selection). The
-// button shows the outcome briefly, then returns to "Copy".
-async function copyStrand(button, text) {
+// Writes the plain strand (no row numbers or spaces) to the clipboard. The
+// button shows the outcome briefly, then returns to "Copy". Its accessible
+// name ("Copy reverse complement") does not change, so the outcome is also
+// announced through the #copy-status live region.
+async function copyStrand(button, text, name) {
   // Store the original label once, so repeated clicks do not capture "Copied!".
   if (!button.dataset.idle) button.dataset.idle = button.textContent;
 
   try {
     await navigator.clipboard.writeText(text);
     flashLabel(button, "Copied!");
+    announce(`${name} copied.`);
   } catch (error) {
     console.warn("Clipboard write failed.", error);
     flashLabel(button, "Copy failed");
+    announce(`${name}: copy failed.`);
   }
+}
+
+// Clearing the live region first, then writing on a later tick, makes screen
+// readers announce the message even when it is the same as the last one.
+function announce(message) {
+  copyStatus.textContent = "";
+  setTimeout(() => {
+    copyStatus.textContent = message;
+  }, 100);
 }
 
 function flashLabel(button, label) {
@@ -189,12 +213,16 @@ function flashLabel(button, label) {
   }, COPY_FEEDBACK_MS);
 }
 
+copyInputButton.addEventListener("click", () => {
+  if (current) copyStrand(copyInputButton, current.input, "Input sequence");
+});
+
 copyRcButton.addEventListener("click", () => {
-  if (current) copyStrand(copyRcButton, current.reverseComplement);
+  if (current) copyStrand(copyRcButton, current.reverseComplement, "Reverse complement");
 });
 
 copyRnaButton.addEventListener("click", () => {
-  if (current) copyStrand(copyRnaButton, current.rna);
+  if (current) copyStrand(copyRnaButton, current.rna, "RNA");
 });
 
 // ---------- 7. Download menu ----------

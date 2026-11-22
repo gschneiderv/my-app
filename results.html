@@ -83,16 +83,39 @@
         <!-- Shown instead of the strands when the input is invalid. -->
         <p class="result-error" id="result-error" role="alert" hidden></p>
 
-        <!-- Read-only container: Reverse Complement (DNA) -->
+        <!--
+          Read-only container: the input after cleaning (headers, spaces,
+          digits and gaps removed), so the user can check what was processed.
+        -->
+        <article class="strand-card" id="input-card">
+          <header class="strand-header">
+            <div class="strand-title">
+              <span class="strand-tag strand-tag--dna">DNA</span>
+              <h2 id="input-title">Input (cleaned)</h2>
+              <span class="strand-meta">5&prime; → 3&prime;</span>
+            </div>
+            <!--
+              Copies this strand. Enabled by main.js once results exist. Each
+              Copy button has its own accessible name, so screen reader users
+              can tell them apart.
+            -->
+            <button type="button" class="btn btn-ghost" id="copy-input-button" aria-label="Copy input sequence" disabled>Copy</button>
+          </header>
+          <div class="strand-body" role="region" aria-labelledby="input-title">
+            <div class="strand-ruler" aria-hidden="true"></div>
+            <div class="strand-text" id="input-sequence"></div>
+          </div>
+        </article>
+
+        <!-- Read-only container: reverse complement of the input -->
         <article class="strand-card" id="rc-card">
           <header class="strand-header">
             <div class="strand-title">
               <span class="strand-tag strand-tag--dna">DNA</span>
-              <h2 id="rc-title">Reverse Complement (DNA)</h2>
+              <h2 id="rc-title">Reverse Complement (of the input)</h2>
               <span class="strand-meta">5&prime; → 3&prime;</span>
             </div>
-            <!-- Copies this strand. Enabled by main.js once results exist. -->
-            <button type="button" class="btn btn-ghost" id="copy-rc-button" disabled>Copy</button>
+            <button type="button" class="btn btn-ghost" id="copy-rc-button" aria-label="Copy reverse complement" disabled>Copy</button>
           </header>
           <div class="strand-body" role="region" aria-labelledby="rc-title">
             <div class="strand-ruler" aria-hidden="true"></div>
@@ -108,13 +131,16 @@
               <h2 id="rna-title">RNA (input strand, T &rarr; U)</h2>
               <span class="strand-meta">5&prime; → 3&prime;</span>
             </div>
-            <button type="button" class="btn btn-ghost" id="copy-rna-button" disabled>Copy</button>
+            <button type="button" class="btn btn-ghost" id="copy-rna-button" aria-label="Copy RNA" disabled>Copy</button>
           </header>
           <div class="strand-body" role="region" aria-labelledby="rna-title">
             <div class="strand-ruler" aria-hidden="true"></div>
             <div class="strand-text" id="rna-sequence"></div>
           </div>
         </article>
+
+        <!-- Announces "copied" to screen readers (the button names stay the same). -->
+        <p class="visually-hidden" id="copy-status" role="status"></p>
       </section>
 
       <!--
