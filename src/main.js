@@ -6,25 +6,32 @@
   and "Start New Sequence".
 */
 
-import { analyse } from "./calc.js";
+import { analyse, cleanSequence } from "./calc.js";
 import { showTemperature, clearTemperature } from "./temperature.js";
-import { EXPORT_FORMATS } from "./export.js";
+import { EXPORT_FORMATS, fastaId, downloadBaseName } from "./export.js";
 import { readSaved, clear } from "./storage.js";
+import { showStrands } from "./strand-view.js";
 
 // How long the "Copied!" label stays before it reverts, in milliseconds.
 const COPY_FEEDBACK_MS = 1800;
 
 // ---------- 1. Element references ----------
 // Looked up once, so the render functions below do not query the page again.
+const dashboard = document.getElementById("dashboard");
 const statusChip = document.getElementById("status-chip");
 const computeMs = document.getElementById("compute-ms");
 const resultError = document.getElementById("result-error");
+const inputCard = document.getElementById("input-card");
 const rcCard = document.getElementById("rc-card");
 const rnaCard = document.getElementById("rna-card");
+const inputSequence = document.getElementById("input-sequence");
+const inputId = document.getElementById("input-id");
 const rcSequence = document.getElementById("rc-sequence");
 const rnaSequence = document.getElementById("rna-sequence");
+const copyInputButton = document.getElementById("copy-input-button");
 const copyRcButton = document.getElementById("copy-rc-button");
 const copyRnaButton = document.getElementById("copy-rna-button");
+const copyStatus = document.getElementById("copy-status");
 const metricLength = document.getElementById("metric-length");
 const metricGc = document.getElementById("metric-gc");
 const metricFrame = document.getElementById("metric-frame");
@@ -46,41 +53,76 @@ let current = null;
 // ---------- 3. Run the pipeline and time it ----------
 // The timer covers only the calculation, not the page drawing, so it matches
 // the 50 ms budget in the acceptance criteria.
-const start = performance.now();
-const result = analyse(readSaved());
-computeMs.textContent = (performance.now() - start).toFixed(1);
+// shownRaw is the saved text the page is showing. It lets a page restored
+// from the back/forward cache skip the work when nothing has changed.
+let shownRaw = null;
 
-if (result.ok) {
-  showResults(result);
-} else {
-  // Screen 1 already sends invalid or empty input to the warning screen, so
-  // this only happens when results.html is opened directly (a bookmark, or a
-  // reload after the saved text changed). Clear the placeholder numbers first,
-  // then hand over to the warning screen. replace() keeps this page out of
-  // the history, so Back does not bounce the user here again.
-  showError(result.message);
-  window.location.replace("/invalid.html");
+function render() {
+  const raw = readSaved();
+  if (raw !== shownRaw) {
+    shownRaw = raw;
+    const start = performance.now();
+    const result = analyse(raw);
+    computeMs.textContent = (performance.now() - start).toFixed(1);
+
+    if (!result.ok) {
+      // Screen 1 already sends invalid or empty input to the warning screen,
+      // so this only happens when results.html is opened directly (a
+      // bookmark, a reload, or Back after "Start New Sequence" cleared the
+      // input). With nothing saved, Screen 1 is the place to start; anything
+      // else goes to the warning screen. replace() keeps this page out of
+      // the history, so Back does not bounce the user here again. The page
+      // stays faded out if it was, so it does not flash before it leaves.
+      showError(result.message);
+      window.location.replace(raw === "" ? "/" : "/invalid.html");
+      return;
+    }
+    showResults(result, raw);
+  }
+  document.body.classList.remove("is-leaving");
 }
 
-// ---------- 4. Render: valid input ----------
-function showResults(r) {
-  current = r;
+render();
 
+// B4: Chrome keeps this page in the back/forward cache. After "Start New
+// Sequence" and the browser's Back button, it comes back exactly as it was
+// left: faded out by .is-leaving, with the old results. Render it again from
+// storage, the same as a fresh load, so the screen always matches the saved
+// input (and what a reload would show).
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) render();
+});
+
+// ---------- 4. Render: valid input ----------
+// `raw` is the saved text. The cleaned input and its FASTA ID are shown and
+// exported next to the results, so the user can check what was processed.
+function showResults(r, raw) {
+  current = { ...r, input: cleanSequence(raw), fastaId: fastaId(raw) };
+
+  dashboard.hidden = false;
   resultError.hidden = true;
+  inputCard.hidden = false;
   rcCard.hidden = false;
   rnaCard.hidden = false;
 
   statusChip.textContent = "Validated";
   statusChip.classList.remove("is-error");
 
-  rcSequence.textContent = r.reverseComplement;
-  rnaSequence.textContent = r.rna;
+  showStrands([
+    [inputSequence, current.input],
+    [rcSequence, r.reverseComplement],
+    [rnaSequence, r.rna],
+  ]);
+  inputId.textContent = `ID: ${current.fastaId}`;
+  inputId.title = current.fastaId; // the full ID, if the label is cut short
+  inputId.hidden = current.fastaId === "";
+  copyInputButton.disabled = false;
   copyRcButton.disabled = false;
   copyRnaButton.disabled = false;
   downloadButton.disabled = false;
 
   // Tm card (with its reaction conditions) and primer checklist.
-  showTemperature(r);
+  showTemperature(current);
 
   metricLength.textContent = r.length.toLocaleString("en-US");
   metricGc.textContent = r.gcPercent.toFixed(1);
@@ -102,14 +144,17 @@ function showResults(r) {
 function showError(message) {
   current = null;
 
+  dashboard.hidden = false;
   resultError.textContent = message;
   resultError.hidden = false;
+  inputCard.hidden = true;
   rcCard.hidden = true;
   rnaCard.hidden = true;
 
   statusChip.textContent = "Invalid input";
   statusChip.classList.add("is-error");
 
+  copyInputButton.disabled = true;
   copyRcButton.disabled = true;
   copyRnaButton.disabled = true;
   downloadButton.disabled = true;
@@ -123,19 +168,32 @@ function showError(message) {
 }
 
 // ---------- 6. Copy a strand ----------
-// Writes the strand to the clipboard (the same as Ctrl+C on a selection). The
-// button shows the outcome briefly, then returns to "Copy".
-async function copyStrand(button, text) {
+// Writes the plain strand (no row numbers or spaces) to the clipboard. The
+// button shows the outcome briefly, then returns to "Copy". Its accessible
+// name ("Copy reverse complement") does not change, so the outcome is also
+// announced through the #copy-status live region.
+async function copyStrand(button, text, name) {
   // Store the original label once, so repeated clicks do not capture "Copied!".
   if (!button.dataset.idle) button.dataset.idle = button.textContent;
 
   try {
     await navigator.clipboard.writeText(text);
     flashLabel(button, "Copied!");
+    announce(`${name} copied.`);
   } catch (error) {
     console.warn("Clipboard write failed.", error);
     flashLabel(button, "Copy failed");
+    announce(`${name}: copy failed.`);
   }
+}
+
+// Clearing the live region first, then writing on a later tick, makes screen
+// readers announce the message even when it is the same as the last one.
+function announce(message) {
+  copyStatus.textContent = "";
+  setTimeout(() => {
+    copyStatus.textContent = message;
+  }, 100);
 }
 
 function flashLabel(button, label) {
@@ -146,12 +204,16 @@ function flashLabel(button, label) {
   }, COPY_FEEDBACK_MS);
 }
 
+copyInputButton.addEventListener("click", () => {
+  if (current) copyStrand(copyInputButton, current.input, "Input sequence");
+});
+
 copyRcButton.addEventListener("click", () => {
-  if (current) copyStrand(copyRcButton, current.reverseComplement);
+  if (current) copyStrand(copyRcButton, current.reverseComplement, "Reverse complement");
 });
 
 copyRnaButton.addEventListener("click", () => {
-  if (current) copyStrand(copyRnaButton, current.rna);
+  if (current) copyStrand(copyRnaButton, current.rna, "RNA");
 });
 
 // ---------- 7. Download menu ----------
@@ -187,7 +249,7 @@ downloadMenu.addEventListener("click", (event) => {
   if (!item || !current) return;
 
   const format = EXPORT_FORMATS.find((f) => f.id === item.dataset.format);
-  saveFile(format.build(current), format.mime, `sequencechef-results.${format.extension}`);
+  saveFile(format.build(current), format.mime, `${downloadBaseName(current.fastaId)}.${format.extension}`);
   setMenuOpen(false);
 });
 
