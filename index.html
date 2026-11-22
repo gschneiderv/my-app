@@ -63,7 +63,19 @@
           placeholder="Paste your raw DNA sequence here (e.g., HumIns_gene_v3)"
           spellcheck="false"
           autocomplete="off"
+          aria-describedby="input-notice"
         ></textarea>
+
+        <!--
+          Problems that keep the user on this screen when they press Next
+          (see init.js). The text is a polite live region, so each new
+          message is announced, and the text area points to it with
+          aria-describedby. It stays in the page while empty, because a live
+          region that appears at the same time as its text is often not read.
+        -->
+        <div class="input-notice" id="input-notice-box">
+          <p class="input-notice-text" id="input-notice" role="status"></p>
+        </div>
 
         <!--
           Test samples from src/mock-data.js. Choosing one copies its sequence
