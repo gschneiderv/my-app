@@ -147,12 +147,14 @@
     -->
     <div class="screen-actions">
       <!--
-        Download menu. The button opens a list of formats. Choosing one saves
-        both strands and the metrics in that format. The list is built in main.js
-        from EXPORT_FORMATS in src/export.js.
+        Download menu. The button shows or hides a list of formats. It is a
+        disclosure (a button plus a list of buttons), not an ARIA menu, so Tab
+        moves through the formats. Choosing one saves both strands and the
+        metrics in that format. The list is built in main.js from
+        EXPORT_FORMATS in src/export.js.
       -->
       <div class="download">
-        <button type="button" class="btn-secondary" id="download-button" aria-haspopup="true" aria-expanded="false" disabled>
+        <button type="button" class="btn-secondary" id="download-button" aria-expanded="false" aria-controls="download-menu" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 4v11" />
             <path d="M7 10l5 5 5-5" />
@@ -163,7 +165,7 @@
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
-        <div class="download-menu" id="download-menu" role="menu" hidden></div>
+        <ul class="download-menu" id="download-menu" aria-label="Download formats" hidden></ul>
       </div>
 
       <button type="button" class="btn-secondary" id="new-sequence-button">

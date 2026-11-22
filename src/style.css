@@ -570,7 +570,9 @@ button {
   bottom: calc(100% + 0.5rem);
   z-index: 10;
   min-width: 14rem;
+  margin: 0; /* it is a <ul>: drop the default list margin and bullets */
   padding: 0.25rem;
+  list-style: none;
   background: var(--surface-elevated);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-container);
@@ -595,6 +597,12 @@ button {
 .menu-item:focus-visible {
   background: var(--surface-highlight);
   outline: none;
+}
+
+/* Keyboard focus also gets the cyan ring used on the other buttons (4.3:1 on the item) */
+.menu-item:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: -2px;
 }
 
 .btn-secondary {
