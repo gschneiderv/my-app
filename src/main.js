@@ -7,6 +7,7 @@
 */
 
 import { analyse } from "./calc.js";
+import { showTemperature, clearTemperature } from "./temperature.js";
 import { EXPORT_FORMATS } from "./export.js";
 
 // Must match STORAGE_KEY in src/init.js. This is the sequence Screen 1 saved.
@@ -26,8 +27,6 @@ const rcSequence = document.getElementById("rc-sequence");
 const rnaSequence = document.getElementById("rna-sequence");
 const copyRcButton = document.getElementById("copy-rc-button");
 const copyRnaButton = document.getElementById("copy-rna-button");
-const tmNumber = document.getElementById("tm-number");
-const tmNote = document.getElementById("tm-note");
 const metricLength = document.getElementById("metric-length");
 const metricGc = document.getElementById("metric-gc");
 const metricFrame = document.getElementById("metric-frame");
@@ -90,9 +89,8 @@ function showResults(r) {
   copyRnaButton.disabled = false;
   downloadButton.disabled = false;
 
-  // Round to one decimal. Short sequences give whole numbers, which print as "24".
-  tmNumber.textContent = Number(r.melting.value.toFixed(1)).toString();
-  tmNote.textContent = r.melting.method;
+  // Tm card (with its reaction conditions) and primer checklist.
+  showTemperature(r);
 
   metricLength.textContent = r.length.toLocaleString("en-US");
   metricGc.textContent = r.gcPercent.toFixed(1);
@@ -126,8 +124,7 @@ function showError(message) {
   copyRnaButton.disabled = true;
   downloadButton.disabled = true;
 
-  tmNumber.textContent = "—";
-  tmNote.textContent = "Not calculated";
+  clearTemperature();
   metricLength.textContent = "—";
   metricGc.textContent = "—";
   metricFrame.textContent = "—";
