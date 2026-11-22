@@ -57,21 +57,45 @@ function readSavedSequence() {
 // ---------- 3. Run the pipeline and time it ----------
 // The timer covers only the calculation, not the page drawing, so it matches
 // the 50 ms budget in the acceptance criteria.
-const start = performance.now();
-const result = analyse(readSavedSequence());
-computeMs.textContent = (performance.now() - start).toFixed(1);
+// shownRaw is the saved text the page is showing. It lets a page restored
+// from the back/forward cache skip the work when nothing has changed.
+let shownRaw = null;
 
-if (result.ok) {
-  showResults(result);
-} else {
-  // Screen 1 already sends invalid or empty input to the warning screen, so
-  // this only happens when results.html is opened directly (a bookmark, or a
-  // reload after the saved text changed). Clear the placeholder numbers first,
-  // then hand over to the warning screen. replace() keeps this page out of
-  // the history, so Back does not bounce the user here again.
-  showError(result.message);
-  window.location.replace("/invalid.html");
+function render() {
+  const raw = readSavedSequence();
+  if (raw !== shownRaw) {
+    shownRaw = raw;
+    const start = performance.now();
+    const result = analyse(raw);
+    computeMs.textContent = (performance.now() - start).toFixed(1);
+
+    if (!result.ok) {
+      // Screen 1 already sends invalid or empty input to the warning screen,
+      // so this only happens when results.html is opened directly (a
+      // bookmark, a reload, or Back after "Start New Sequence" cleared the
+      // input). With nothing saved, Screen 1 is the place to start; anything
+      // else goes to the warning screen. replace() keeps this page out of
+      // the history, so Back does not bounce the user here again. The page
+      // stays faded out if it was, so it does not flash before it leaves.
+      showError(result.message);
+      window.location.replace(raw === "" ? "/" : "/invalid.html");
+      return;
+    }
+    showResults(result);
+  }
+  document.body.classList.remove("is-leaving");
 }
+
+render();
+
+// B4: Chrome keeps this page in the back/forward cache. After "Start New
+// Sequence" and the browser's Back button, it comes back exactly as it was
+// left: faded out by .is-leaving, with the old results. Render it again from
+// storage, the same as a fresh load, so the screen always matches the saved
+// input (and what a reload would show).
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) render();
+});
 
 // ---------- 4. Render: valid input ----------
 function showResults(r) {
