@@ -9,9 +9,7 @@
 import { analyse } from "./calc.js";
 import { showTemperature, clearTemperature } from "./temperature.js";
 import { EXPORT_FORMATS } from "./export.js";
-
-// Must match STORAGE_KEY in src/init.js. This is the sequence Screen 1 saved.
-const STORAGE_KEY = "sequenceChef.rawSequence";
+import { readSaved, clear } from "./storage.js";
 
 // How long the "Copied!" label stays before it reverts, in milliseconds.
 const COPY_FEEDBACK_MS = 1800;
@@ -42,22 +40,14 @@ const newSequenceButton = document.getElementById("new-sequence-button");
 let current = null;
 
 // ---------- 2. Read the saved sequence ----------
-// sessionStorage can throw when storage is blocked. In that case treat it as
-// empty, so the user gets the "enter a sequence" screen instead of a broken page.
-function readSavedSequence() {
-  try {
-    return sessionStorage.getItem(STORAGE_KEY) ?? "";
-  } catch (error) {
-    console.warn("Could not read the saved sequence.", error);
-    return "";
-  }
-}
+// readSaved() (src/storage.js) returns "" when storage is blocked, so the
+// user gets the "enter a sequence" screen instead of a broken page.
 
 // ---------- 3. Run the pipeline and time it ----------
 // The timer covers only the calculation, not the page drawing, so it matches
 // the 50 ms budget in the acceptance criteria.
 const start = performance.now();
-const result = analyse(readSavedSequence());
+const result = analyse(readSaved());
 computeMs.textContent = (performance.now() - start).toFixed(1);
 
 if (result.ok) {
@@ -239,11 +229,7 @@ function saveFile(contents, mime, filename) {
 // empty text area.
 newSequenceButton.addEventListener("click", () => {
   // If clearing fails, still navigate: Screen 1 starts empty anyway.
-  try {
-    sessionStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-    console.warn("Could not clear the saved sequence.", error);
-  }
+  clear();
 
   // The fade lasts 200ms (see body.is-leaving in style.css). Navigating after
   // it finishes avoids a flash of the next page.
