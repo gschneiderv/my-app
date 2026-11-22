@@ -168,19 +168,24 @@ copyRnaButton.addEventListener("click", () => {
 });
 
 // ---------- 7. Download menu ----------
-// Builds one menu item per format in EXPORT_FORMATS. Each item downloads the
-// file in that format.
+// A disclosure: the button shows or hides a list with one button per format
+// in EXPORT_FORMATS, and Tab moves through them like any other buttons. Each
+// item downloads the file in that format.
 for (const format of EXPORT_FORMATS) {
   const item = document.createElement("button");
   item.type = "button";
   item.className = "menu-item";
-  item.setAttribute("role", "menuitem");
   item.textContent = `${format.label} (.${format.extension})`;
   item.dataset.format = format.id;
-  downloadMenu.appendChild(item);
+  const listItem = document.createElement("li");
+  listItem.appendChild(item);
+  downloadMenu.appendChild(listItem);
 }
 
 function setMenuOpen(open) {
+  // Hiding the list would drop focus to the page if an item has it, so send
+  // focus back to the button first.
+  if (!open && downloadMenu.contains(document.activeElement)) downloadButton.focus();
   downloadMenu.hidden = !open;
   downloadButton.setAttribute("aria-expanded", String(open));
 }
@@ -208,6 +213,14 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !downloadMenu.hidden) {
     setMenuOpen(false);
     downloadButton.focus();
+  }
+});
+
+// Also closes it when Tab or Shift+Tab moves focus out of the download area.
+// relatedTarget is null when focus leaves the window; the menu stays open then.
+downloadWrapper.addEventListener("focusout", (event) => {
+  if (event.relatedTarget && !downloadWrapper.contains(event.relatedTarget)) {
+    setMenuOpen(false);
   }
 });
 
