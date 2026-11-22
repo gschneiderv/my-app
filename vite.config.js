@@ -1,9 +1,9 @@
 /*
   Vite configuration.
 
-  The app has two pages (Screen 1 and the results screen). Vite only builds
-  index.html by default, so both pages are listed as build inputs here.
-  Without this, `npm run build` would leave out results.html.
+  The app has three pages (Screen 1, the results screen and the invalid input
+  warning). Vite only builds index.html by default, so every page is listed as
+  a build input here. Without this, `npm run build` would leave the others out.
 */
 
 import { defineConfig } from "vite";
@@ -15,6 +15,7 @@ export default defineConfig({
       input: {
         main: resolve(import.meta.dirname, "index.html"), // Screen 1: initialization
         results: resolve(import.meta.dirname, "results.html"), // Screen 2: results
+        invalid: resolve(import.meta.dirname, "invalid.html"), // Invalid input warning
       },
     },
   },
