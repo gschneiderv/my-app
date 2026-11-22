@@ -383,6 +383,249 @@ export function meltingTemperature(seq, counts = countBases(seq), conditions = D
   };
 }
 
+// ---------- 4b. Primer checklist ----------
+/*
+  Quick checks of a primer before ordering it. Sources: QIAGEN, PREMIER
+  Biosoft and Addgene primer design guides, and Primer3's defaults.
+  The self-complementarity check is a simple run search, not a folding
+  (ΔG) calculation.
+*/
+export const PRIMER_RULES = Object.freeze({
+  minLength: 18,
+  maxLength: 30,
+  minGcPercent: 40,
+  maxGcPercent: 60,
+  minTm: 52,
+  maxTm: 65,
+  maxGcInLastFive: 3, // G/C allowed in the last 5 bases at the 3' end
+  maxRun: 4, // identical bases in a row
+  maxDinucleotideRepeats: 4, // e.g. ATATATAT is 4 repeats of AT
+  // A complementary run at the 3' end weighs double: 4 bases there warn,
+  // elsewhere it takes 8. Primer3 allows 3 at the end and 8 anywhere.
+  maxSelfComplementEnd: 3,
+  maxSelfComplementAny: 7,
+});
+
+/**
+ * Longest stretch of one repeated base, such as AAAAA.
+ * @param {string} seq
+ * @returns {{base: string, length: number, position: number}} position is 1-based (0 if seq is empty)
+ */
+export function longestRun(seq) {
+  let best = { base: "", length: 0, position: 0 };
+  let start = 0;
+  for (let i = 1; i <= seq.length; i++) {
+    if (i < seq.length && seq[i] === seq[start]) continue;
+    if (i - start > best.length) best = { base: seq[start], length: i - start, position: start + 1 };
+    start = i;
+  }
+  return best;
+}
+
+/**
+ * Longest repeat of a two-base unit, such as ATATAT (AT three times).
+ * Units of one base twice (AA) are runs, not repeats, and are left out.
+ * @param {string} seq
+ * @returns {{unit: string, repeats: number, position: number}} position is 1-based (0 when none)
+ */
+export function longestDinucleotideRepeat(seq) {
+  let best = { unit: "", repeats: 0, position: 0 };
+  let start = 0; // start of the current stretch where every base equals the one two places back
+  for (let i = 2; i <= seq.length; i++) {
+    if (i < seq.length && seq[i] === seq[i - 2]) continue;
+    const repeats = Math.floor((i - start) / 2);
+    if (seq[start] !== seq[start + 1] && repeats > best.repeats) {
+      best = { unit: seq.slice(start, start + 2), repeats, position: start + 1 };
+    }
+    start = i - 1;
+  }
+  return best;
+}
+
+/**
+ * Simple self-complementarity scan: stretches of the primer that can pair,
+ * antiparallel, with another part of the same primer or with a second copy
+ * (hairpins and self-dimers). O(n²), so meant for primer-length sequences.
+ * @param {string} seq A/C/G/T sequence, 5'->3'
+ * @returns {{
+ *   longest: {length: number, position: number, partner: number},
+ *   threePrime: {length: number, partner: number}
+ * }} longest is the longest complementary run anywhere; threePrime is the
+ *   longest one that ends at the 3' base. Positions are 1-based starts in
+ *   seq; partner is where the pairing stretch starts.
+ */
+export function selfComplementarity(seq) {
+  const n = seq.length;
+  const rc = reverseComplement(seq);
+
+  // Longest common substring of seq and its reverse complement. A stretch of
+  // seq that also occurs in rc pairs with the matching stretch of seq.
+  let longest = { length: 0, position: 0, partner: 0 };
+  let previous = new Array(n + 1).fill(0);
+  for (let i = 1; i <= n; i++) {
+    const row = new Array(n + 1).fill(0);
+    for (let j = 1; j <= n; j++) {
+      if (seq[i - 1] !== rc[j - 1]) continue;
+      row[j] = previous[j - 1] + 1;
+      if (row[j] > longest.length) {
+        // rc[j - length, j) is the reverse complement of seq[n - j, n - j + length).
+        longest = { length: row[j], position: i - row[j] + 1, partner: n - j + 1 };
+      }
+    }
+    previous = row;
+  }
+
+  // The 3' end: the longest tail whose reverse complement occurs in seq.
+  let threePrime = { length: 0, partner: 0 };
+  for (let k = 1; k <= n; k++) {
+    const at = seq.indexOf(reverseComplement(seq.slice(n - k)));
+    if (at === -1) break;
+    threePrime = { length: k, partner: at + 1 };
+  }
+
+  return { longest, threePrime };
+}
+
+function countGc(text) {
+  let gc = 0;
+  for (const base of text) if (base === "G" || base === "C") gc += 1;
+  return gc;
+}
+
+/**
+ * Primer checklist: one row per rule in PRIMER_RULES, each a pass or a
+ * warning with a short reason. The sequence is read as the primer, 5'->3',
+ * so the 3' checks look at its last bases.
+ * @param {string} seq validated A/C/G/T sequence, 5'->3'
+ * @param {number} tm Tm in °C at the current conditions (NaN if unknown)
+ * @returns {Array<{id: string, label: string, ok: boolean, detail: string}> | null}
+ *   null for an empty sequence or one longer than OLIGO_MAX_LENGTH, which is
+ *   not a primer
+ */
+export function primerChecklist(seq, tm) {
+  const n = seq.length;
+  if (n === 0 || n > OLIGO_MAX_LENGTH) return null;
+  const rules = PRIMER_RULES;
+  const rows = [];
+
+  // Length
+  let detail = `${n} nt`;
+  if (n < rules.minLength) detail += `, shorter than ${rules.minLength} nt`;
+  if (n > rules.maxLength) detail += `, longer than ${rules.maxLength} nt`;
+  rows.push({
+    id: "length",
+    label: `Length ${rules.minLength}–${rules.maxLength} nt`,
+    ok: n >= rules.minLength && n <= rules.maxLength,
+    detail,
+  });
+
+  // GC content
+  const gcPercent = (countGc(seq) / n) * 100;
+  detail = `${gcPercent.toFixed(1)} %`;
+  if (gcPercent < rules.minGcPercent) detail += `, below ${rules.minGcPercent} %`;
+  if (gcPercent > rules.maxGcPercent) detail += `, above ${rules.maxGcPercent} %`;
+  rows.push({
+    id: "gc",
+    label: `GC content ${rules.minGcPercent}–${rules.maxGcPercent} %`,
+    ok: gcPercent >= rules.minGcPercent && gcPercent <= rules.maxGcPercent,
+    detail,
+  });
+
+  // Tm at the current conditions
+  const tmKnown = Number.isFinite(tm);
+  if (!tmKnown) detail = "No Tm at the current conditions";
+  else {
+    detail = `${tm.toFixed(1)} °C at the current conditions`;
+    if (tm < rules.minTm) detail += `, below ${rules.minTm} °C`;
+    if (tm > rules.maxTm) detail += `, above ${rules.maxTm} °C`;
+  }
+  rows.push({
+    id: "tm",
+    label: `Tm ${rules.minTm}–${rules.maxTm} °C`,
+    ok: tmKnown && tm >= rules.minTm && tm <= rules.maxTm,
+    detail,
+  });
+
+  // 3' GC clamp: a G or C in the last 2 bases, but not too many in the last 5
+  const endTwo = countGc(seq.slice(-2));
+  const endFive = countGc(seq.slice(-5));
+  detail = `Ends …${seq.slice(-5)}: ${endTwo} G/C in the last 2 bases, ${endFive} in the last 5`;
+  if (endTwo === 0) detail += "; no clamp";
+  if (endFive > rules.maxGcInLastFive) detail += `; more than ${rules.maxGcInLastFive}`;
+  rows.push({
+    id: "clamp",
+    label: `3′ GC clamp: 1–2 G/C at the end, at most ${rules.maxGcInLastFive} in the last 5`,
+    ok: endTwo >= 1 && endFive <= rules.maxGcInLastFive,
+    detail,
+  });
+
+  // Runs of one base
+  const run = longestRun(seq);
+  rows.push({
+    id: "runs",
+    label: `No run of more than ${rules.maxRun} identical bases`,
+    ok: run.length <= rules.maxRun,
+    detail: `Longest run: ${run.base.repeat(run.length)} (${run.length}) at position ${run.position}`,
+  });
+
+  // Dinucleotide repeats
+  const repeat = longestDinucleotideRepeat(seq);
+  rows.push({
+    id: "repeats",
+    label: `No more than ${rules.maxDinucleotideRepeats} dinucleotide repeats`,
+    ok: repeat.repeats <= rules.maxDinucleotideRepeats,
+    detail:
+      repeat.repeats < 2
+        ? "No repeated dinucleotide"
+        : `Longest: ${repeat.unit} × ${repeat.repeats} at position ${repeat.position}`,
+  });
+
+  // 3' end base
+  const last = seq[n - 1];
+  rows.push({
+    id: "end",
+    label: "3′ end is not T",
+    ok: last !== "T",
+    detail: `Ends in ${last}`,
+  });
+
+  // Self-complementarity, weighted towards the 3' end
+  const self = selfComplementarity(seq);
+  const { longest, threePrime } = self;
+  const span = (start, length) => `${start}–${start + length - 1}`;
+  const endOk = threePrime.length <= rules.maxSelfComplementEnd;
+  const anyOk = longest.length <= rules.maxSelfComplementAny;
+  if (!endOk) {
+    const tailStart = n - threePrime.length + 1;
+    detail = `The last ${threePrime.length} bases (…${seq.slice(tailStart - 1)}) `;
+    // A tail that pairs with itself is a palindrome: two copies pair at their 3' ends.
+    detail +=
+      threePrime.partner === tailStart
+        ? "are self-complementary: primer-dimer risk"
+        : `can pair with positions ${span(threePrime.partner, threePrime.length)}: primer-dimer risk`;
+  } else if (!anyOk) {
+    detail = `Positions ${span(longest.position, longest.length)} (${longest.length} bases) `;
+    detail +=
+      longest.partner === longest.position
+        ? "are self-complementary"
+        : `can pair with positions ${span(longest.partner, longest.length)}`;
+  } else if (longest.length < 4) {
+    detail = "No complementary run of 4 or more bases";
+  } else {
+    detail = `Longest complementary run: ${longest.length} bases; ${threePrime.length} at the 3′ end`;
+  }
+  rows.push({
+    id: "self",
+    label:
+      `No self-complementary run of ${rules.maxSelfComplementEnd + 1}+ bases at the 3′ end, ` +
+      `or ${rules.maxSelfComplementAny + 1}+ anywhere`,
+    ok: endOk && anyOk,
+    detail,
+  });
+
+  return rows;
+}
+
 // ---------- 5. Coding frame ----------
 
 // Looks up one codon's amino acid. The codon must be three valid bases.
