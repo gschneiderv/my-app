@@ -41,7 +41,7 @@ for (const sample of MOCK_SEQUENCES) {
 }
 
 // Accepted file extensions. Must match the `accept` attribute in index.html.
-const ALLOWED_EXTENSIONS = [".fasta", ".fa", ".txt"];
+const ALLOWED_EXTENSIONS = [".fasta", ".fa", ".fas", ".txt"];
 
 /*
   Largest input accepted, counted in characters of the raw text (headers and
@@ -107,6 +107,18 @@ fileInput.addEventListener("change", () => {
   if (!isAllowed) {
     showStatus(`Unsupported file type. Use ${ALLOWED_EXTENSIONS.join(", ")}.`, true);
     fileInput.value = ""; // clear the picker so the same file can be chosen again
+    return;
+  }
+
+  /*
+    Same limit as typed input, checked on the file size before reading, so a
+    huge file never freezes the page (a 20 MB file took about 4 s to load in
+    the code review). A text file never holds more characters than bytes, so
+    a file within the limit always fits once read.
+  */
+  if (file.size > MAX_INPUT_CHARS) {
+    showStatus(`File too large. The limit is 1 MB (${formatNumber(MAX_INPUT_CHARS)} characters).`, true);
+    fileInput.value = "";
     return;
   }
 
