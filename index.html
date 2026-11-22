@@ -63,8 +63,18 @@
           placeholder="Paste your raw DNA sequence here (e.g., HumIns_gene_v3)"
           spellcheck="false"
           autocomplete="off"
-          aria-describedby="input-notice"
+          aria-describedby="input-stats input-notice"
         ></textarea>
+
+        <!--
+          Live check (see init.js). A short time after the user stops typing,
+          this line shows the cleaned length, the GC content and any
+          characters other than A, T, C and G. It is not a live region, so a
+          screen reader is not interrupted on every pause; it is read with
+          the text area (aria-describedby) instead. Changes in validity are
+          announced through #input-announce below.
+        -->
+        <p class="input-stats" id="input-stats"></p>
 
         <!--
           Problems that keep the user on this screen when they press Next
@@ -80,6 +90,9 @@
             Keep first record only
           </button>
         </div>
+
+        <!-- Screen reader only: says when invalid characters appear or are gone. -->
+        <p class="visually-hidden" id="input-announce" role="status"></p>
 
         <!--
           Test samples from src/mock-data.js. Choosing one copies its sequence

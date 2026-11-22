@@ -324,9 +324,9 @@ button {
 
 /* ---------- 9. Notice under the text area ---------- */
 /*
-  Explains why Next stayed on this screen. The box is always in the page
-  (it holds a live region), so it has no spacing or border until it shows
-  a message. Amber matches the upload error text above.
+  Explains why Next stayed on this screen, or confirms an action. The box is
+  always in the page (it holds a live region), so it has no spacing or
+  border until it shows a message. Amber matches the upload error text above.
 */
 :root {
   --warn: #b45309;
@@ -401,8 +401,51 @@ button {
   outline-offset: 2px;
 }
 
-/* Input that cannot go on: amber border, kept while the box has focus */
-.sequence-input.is-blocked,
-.sequence-input.is-blocked:focus {
+/* Input with a problem (aria-invalid, set by init.js): amber border, kept while focused */
+.sequence-input[aria-invalid="true"],
+.sequence-input[aria-invalid="true"]:focus {
   border-color: var(--warn);
+}
+
+/* ---------- 10. Live check line ---------- */
+/*
+  One compact row under the text area: "LENGTH 24 bp   GC 58.3 %   INVALID 0".
+  Small uppercase labels and monospace values, like the data labels in the
+  design. Hidden while empty, so the empty screen looks as before.
+*/
+.input-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1.25rem;
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.input-stats:empty {
+  display: none;
+}
+
+.input-stat-label {
+  margin-right: 0.375rem;
+  color: var(--ink-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.input-stat-value {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.input-stat.is-flagged .input-stat-value {
+  color: var(--warn);
+}
+
+.input-stats-note {
+  color: var(--ink-muted);
 }
