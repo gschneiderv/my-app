@@ -53,17 +53,49 @@
 
         <!--
           The text area is the main input. The placeholder is shown only while
-          it is empty. The "input" event (see init.js) enables the Next button
-          as soon as the user has typed or pasted something.
+          it is empty. Its example is a valid one-record FASTA input (the MVP
+          example primer), so input in that shape works; &#10; is a line
+          break. The first line is kept short so it fits a phone screen
+          without breaking a word. The "input" event (see init.js) enables
+          the Next button as soon as the user has typed or pasted something.
         -->
         <label class="visually-hidden" for="sequence-input">Raw DNA sequence</label>
         <textarea
           id="sequence-input"
           class="sequence-input"
-          placeholder="Paste your raw DNA sequence here (e.g., HumIns_gene_v3)"
+          placeholder="Paste a raw DNA sequence, e.g.&#10;>my_primer&#10;AGCCCTCCAGGACAGGCTGCATCA"
           spellcheck="false"
           autocomplete="off"
+          aria-describedby="input-stats input-notice"
         ></textarea>
+
+        <!--
+          Live check (see init.js). A short time after the user stops typing,
+          this line shows the cleaned length, the GC content and any
+          characters other than A, T, C and G. It is not a live region, so a
+          screen reader is not interrupted on every pause; it is read with
+          the text area (aria-describedby) instead. Changes in validity are
+          announced through #input-announce below.
+        -->
+        <p class="input-stats" id="input-stats"></p>
+
+        <!--
+          Problems that keep the user on this screen when they press Next
+          (see init.js). The text is a polite live region, so each new
+          message is announced, and the text area points to it with
+          aria-describedby. It stays in the page while empty, because a live
+          region that appears at the same time as its text is often not read.
+          The button is shown only when the input holds several FASTA records.
+        -->
+        <div class="input-notice" id="input-notice-box">
+          <p class="input-notice-text" id="input-notice" role="status"></p>
+          <button type="button" class="btn-secondary" id="keep-first-button" hidden>
+            Keep first record only
+          </button>
+        </div>
+
+        <!-- Screen reader only: says when invalid characters appear or are gone. -->
+        <p class="visually-hidden" id="input-announce" role="status"></p>
 
         <!--
           Test samples from src/mock-data.js. Choosing one copies its sequence
@@ -78,7 +110,7 @@
         </div>
 
         <!-- Hidden file picker. The visible control below is a styled button that opens it. -->
-        <input id="file-input" class="visually-hidden" type="file" accept=".fasta,.fa,.txt" />
+        <input id="file-input" class="visually-hidden" type="file" accept=".fasta,.fa,.fas,.txt" tabindex="-1" />
 
         <div class="init-actions">
           <div class="upload-group">

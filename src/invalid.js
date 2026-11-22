@@ -13,9 +13,7 @@
 */
 
 import { cleanSequence, validate } from "./calc.js";
-
-// Must match STORAGE_KEY in src/init.js and src/main.js.
-const STORAGE_KEY = "sequenceChef.rawSequence";
+import { readSaved } from "./storage.js";
 
 // Caps keep the card compact when the input is very wrong, for example a
 // protein sequence pasted by mistake (up to 20 distinct letters). Five tiles
@@ -36,19 +34,11 @@ const positionsText = document.getElementById("positions-text");
 const tokenList = document.getElementById("token-list");
 
 // ---------- 2. Read the saved input ----------
-// sessionStorage can throw when storage is blocked. Treat that as no input,
-// so the page shows the "enter a sequence" message instead of breaking.
-function readSavedSequence() {
-  try {
-    return sessionStorage.getItem(STORAGE_KEY) ?? "";
-  } catch (error) {
-    console.warn("Could not read the saved sequence.", error);
-    return "";
-  }
-}
+// readSaved() (src/storage.js) returns "" when storage is blocked, so the
+// page shows the "enter a sequence" message instead of breaking.
 
 // ---------- 3. Validate and choose what to show ----------
-const check = validate(cleanSequence(readSavedSequence()));
+const check = validate(cleanSequence(readSaved()));
 
 if (check.ok) {
   // Nothing to fix (the page was opened directly with a valid sequence

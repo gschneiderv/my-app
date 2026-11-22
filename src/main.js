@@ -7,11 +7,10 @@
 */
 
 import { analyse, cleanSequence } from "./calc.js";
+import { showTemperature, clearTemperature } from "./temperature.js";
 import { EXPORT_FORMATS, fastaId, downloadBaseName } from "./export.js";
+import { readSaved, clear } from "./storage.js";
 import { showStrands } from "./strand-view.js";
-
-// Must match STORAGE_KEY in src/init.js. This is the sequence Screen 1 saved.
-const STORAGE_KEY = "sequenceChef.rawSequence";
 
 // How long the "Copied!" label stays before it reverts, in milliseconds.
 const COPY_FEEDBACK_MS = 1800;
@@ -33,8 +32,6 @@ const copyInputButton = document.getElementById("copy-input-button");
 const copyRcButton = document.getElementById("copy-rc-button");
 const copyRnaButton = document.getElementById("copy-rna-button");
 const copyStatus = document.getElementById("copy-status");
-const tmNumber = document.getElementById("tm-number");
-const tmNote = document.getElementById("tm-note");
 const metricLength = document.getElementById("metric-length");
 const metricGc = document.getElementById("metric-gc");
 const metricFrame = document.getElementById("metric-frame");
@@ -50,16 +47,8 @@ const newSequenceButton = document.getElementById("new-sequence-button");
 let current = null;
 
 // ---------- 2. Read the saved sequence ----------
-// sessionStorage can throw when storage is blocked. In that case treat it as
-// empty, so the user gets the "enter a sequence" screen instead of a broken page.
-function readSavedSequence() {
-  try {
-    return sessionStorage.getItem(STORAGE_KEY) ?? "";
-  } catch (error) {
-    console.warn("Could not read the saved sequence.", error);
-    return "";
-  }
-}
+// readSaved() (src/storage.js) returns "" when storage is blocked, so the
+// user gets the "enter a sequence" screen instead of a broken page.
 
 // ---------- 3. Run the pipeline and time it ----------
 // The timer covers only the calculation, not the page drawing, so it matches
@@ -69,7 +58,7 @@ function readSavedSequence() {
 let shownRaw = null;
 
 function render() {
-  const raw = readSavedSequence();
+  const raw = readSaved();
   if (raw !== shownRaw) {
     shownRaw = raw;
     const start = performance.now();
@@ -132,9 +121,8 @@ function showResults(r, raw) {
   copyRnaButton.disabled = false;
   downloadButton.disabled = false;
 
-  // Round to one decimal. Short sequences give whole numbers, which print as "24".
-  tmNumber.textContent = Number(r.melting.value.toFixed(1)).toString();
-  tmNote.textContent = r.melting.method;
+  // Tm card (with its reaction conditions) and primer checklist.
+  showTemperature(current);
 
   metricLength.textContent = r.length.toLocaleString("en-US");
   metricGc.textContent = r.gcPercent.toFixed(1);
@@ -171,8 +159,7 @@ function showError(message) {
   copyRnaButton.disabled = true;
   downloadButton.disabled = true;
 
-  tmNumber.textContent = "—";
-  tmNote.textContent = "Not calculated";
+  clearTemperature();
   metricLength.textContent = "—";
   metricGc.textContent = "—";
   metricFrame.textContent = "—";
@@ -230,19 +217,24 @@ copyRnaButton.addEventListener("click", () => {
 });
 
 // ---------- 7. Download menu ----------
-// Builds one menu item per format in EXPORT_FORMATS. Each item downloads the
-// file in that format.
+// A disclosure: the button shows or hides a list with one button per format
+// in EXPORT_FORMATS, and Tab moves through them like any other buttons. Each
+// item downloads the file in that format.
 for (const format of EXPORT_FORMATS) {
   const item = document.createElement("button");
   item.type = "button";
   item.className = "menu-item";
-  item.setAttribute("role", "menuitem");
   item.textContent = `${format.label} (.${format.extension})`;
   item.dataset.format = format.id;
-  downloadMenu.appendChild(item);
+  const listItem = document.createElement("li");
+  listItem.appendChild(item);
+  downloadMenu.appendChild(listItem);
 }
 
 function setMenuOpen(open) {
+  // Hiding the list would drop focus to the page if an item has it, so send
+  // focus back to the button first.
+  if (!open && downloadMenu.contains(document.activeElement)) downloadButton.focus();
   downloadMenu.hidden = !open;
   downloadButton.setAttribute("aria-expanded", String(open));
 }
@@ -273,6 +265,14 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+// Also closes it when Tab or Shift+Tab moves focus out of the download area.
+// relatedTarget is null when focus leaves the window; the menu stays open then.
+downloadWrapper.addEventListener("focusout", (event) => {
+  if (event.relatedTarget && !downloadWrapper.contains(event.relatedTarget)) {
+    setMenuOpen(false);
+  }
+});
+
 // Saves text as a file through a temporary link. The object URL is released
 // after the click has been handled.
 function saveFile(contents, mime, filename) {
@@ -291,11 +291,7 @@ function saveFile(contents, mime, filename) {
 // empty text area.
 newSequenceButton.addEventListener("click", () => {
   // If clearing fails, still navigate: Screen 1 starts empty anyway.
-  try {
-    sessionStorage.removeItem(STORAGE_KEY);
-  } catch (error) {
-    console.warn("Could not clear the saved sequence.", error);
-  }
+  clear();
 
   // The fade lasts 200ms (see body.is-leaving in style.css). Navigating after
   // it finishes avoids a flash of the next page.
